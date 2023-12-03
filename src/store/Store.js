@@ -1,4 +1,5 @@
-import { Web5 } from "@web5/api";
+// import { Web5 } from "@web5/api";
+import { Web5 } from "@web5/api/browser";
 import { create } from "zustand";
 
 let PROTOCOL_URI =
