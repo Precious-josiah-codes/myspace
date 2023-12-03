@@ -1,15 +1,15 @@
 "use client";
-import {
-  createProfile,
-  createPublicSpace,
-  createRecord,
-  createSpace,
-  getProfile,
-  initWeb5,
-  readPublicSpace,
-  readSpace,
-  tryFetch,
-} from "@/store/Store";
+// import {
+//   createProfile,
+//   createPublicSpace,
+//   createRecord,
+//   createSpace,
+//   getProfile,
+//   initWeb5,
+//   readPublicSpace,
+//   readSpace,
+//   tryFetch,
+// } from "@/store/Store";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -43,13 +43,13 @@ export default function Home() {
     </main>
   );
 
-  async function handleFetch() {
-    const data = await getProfile();
-    setImage(data.profileImage);
-    console.log(data, "the data");
-  }
-  async function handleReadSpace() {
-    const data = await readSpace();
-    console.log(data, "the data");
-  }
+  // async function handleFetch() {
+  //   const data = await getProfile();
+  //   setImage(data.profileImage);
+  //   console.log(data, "the data");
+  // }
+  // async function handleReadSpace() {
+  //   const data = await readSpace();
+  //   console.log(data, "the data");
+  // }
 }
