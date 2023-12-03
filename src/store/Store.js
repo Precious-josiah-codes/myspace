@@ -407,9 +407,9 @@ export const createPublicSpace = async () => {
     },
   });
 
-  // let remotedwn = await record.send(myDid);
+  let remotedwn = await record.send(myDid);
   console.log(record, "hello all my users");
-  // console.log(remotedwn, "hello all my users");
+  console.log(remotedwn, "hello all my users");
 };
 
 export const readPublicSpace = async () => {
