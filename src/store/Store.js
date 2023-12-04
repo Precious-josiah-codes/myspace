@@ -150,23 +150,11 @@ async function installProtocol(web5, protocolDefinition) {
 
 // create profile
 export const createProfile = async (data) => {
-  console.log(data, "the data");
+  console.log(data, "tprofile data");
   try {
     // destructuring the data
-    const { name, profileImage, gender } = data;
     const myDid = useStore.getState().myDid;
     const web5 = useStore.getState().web5;
-    let base64Image;
-
-    // getting the binary image file
-    console.log(profileImage, "the image");
-    const binaryImage = await profileImage.arrayBuffer();
-    base64Image = btoa(
-      new Uint8Array(binaryImage).reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ""
-      )
-    );
 
     // get current date and time
     const currentDate = new Date().toLocaleDateString();
@@ -174,11 +162,9 @@ export const createProfile = async (data) => {
 
     // construct user profile
     const userProfile = {
-      name: name,
+      ...data,
       profileId: myDid,
-      gender,
       timestampWritten: `${currentDate} ${currentTime}`,
-      profileImage: base64Image,
     };
 
     // writing the profile recod locally
@@ -193,30 +179,28 @@ export const createProfile = async (data) => {
       },
     });
 
-    console.log(status, "this is status");
-
+    // send record to remote dwn immediately
     const { status: myDidStatus } = await record.send(myDid);
-    // console.log("message written to local DWN", { record, status });
-    console.log("message written to remote DWN", { myDidStatus });
+    console.log("data written to local DWN", { record, status });
+    console.log("data written to remote DWN", { myDidStatus });
     return true;
   } catch (error) {
+    return false;
     console.error("Error writing secret message to DWN", error);
   }
 };
 
-// store the profile picture of the user
-const storeProfileImage = () => {};
-
-export const fetchProfile = async () => {
-  console.log("Fetching sent messages...");
+// fetch profile
+export const readProfile = async () => {
+  console.log("Fetching profile...");
   try {
     const web5 = useStore.getState().web5;
-    const did = useStore.getState().myDid;
-    console.log(web5, did, PROTOCOL_URI, "web5");
+    const myDid = useStore.getState().myDid;
     const response = await web5.dwn.records.query({
+      from: myDid,
       message: {
         filter: {
-          dataFormat: "application/json",
+          schema: PROFILE_SCHEMA,
         },
       },
     });
@@ -225,13 +209,9 @@ export const fetchProfile = async () => {
       const userMessages = await Promise.all(
         response.records.map(async (record) => {
           const data = await record.data.json();
-          return {
-            ...data,
-            recordId: record.id,
-          };
+          return data;
         })
       );
-      console.log(userMessages, "THE PROFILE");
       return userMessages;
     } else {
       console.error("Error fetching sent messages:", response.status);
@@ -242,184 +222,119 @@ export const fetchProfile = async () => {
   }
 };
 
-export const fetchImage = () => {};
+// create space
+export const createSpace = async (data) => {
+  try {
+    const web5 = useStore.getState().web5;
+    const myDid = useStore.getState().myDid;
 
-// i used this for the remote dwn
-export const tryFetch = async () => {
-  const web5 = useStore.getState().web5;
-  const did = useStore.getState().myDid;
+    let base64Image;
 
-  const { records } = await web5.dwn.records.query({
-    from: did,
-    message: {
-      filter: {
-        schema: PROFILE_SCHEMA,
-        dataFormat: "application/json",
-      },
-    },
-  });
+    // getting the binary image file
+    const binaryImage = await data.spaceImage.arrayBuffer();
+    base64Image = btoa(
+      new Uint8Array(binaryImage).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
 
-  console.log(records, "the record");
+    data["spaceImage"] = base64Image;
 
-  let recordId = records.map((record) => {
-    console.log(record.id, "the id");
-    return record.id;
-  });
+    // get current date and time
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
 
-  let { record } = await web5.dwn.records.read({
-    message: {
-      filter: {
-        recordId: recordId[0],
-      },
-    },
-  });
+    // construct user profile
+    const userProfile = {
+      ...data,
+      timestampWritten: `${currentDate} ${currentTime}`,
+    };
 
-  // assuming the record has a text payload
-  const text = await record.data.json();
-  console.log(text, "gotcha");
-};
-
-export const createRecord = async () => {
-  const web5 = useStore.getState().web5;
-  const myDid = useStore.getState().myDid;
-
-  const { record, status } = await web5.dwn.records.create({
-    data: {
-      username: "precious",
-      age: 90,
-    },
-    message: {
-      protocol: PROTOCOL_URI,
-      protocolPath: "profile",
-      schema: PROFILE_SCHEMA,
-      recipient: myDid,
-      dataFormat: "application/json",
-    },
-  });
-
-  // const { status: myDidStatus } = await record.send(myDid);
-  console.log("message written to local DWN", { record, status });
-  // console.log("message written to remote DWN", { myDidStatus });
-};
-
-export const getProfile = async () => {
-  const web5 = useStore.getState().web5;
-  const did = useStore.getState().myDid;
-
-  const { records } = await web5.dwn.records.query({
-    message: {
-      filter: {
+    const { record, status } = await web5.dwn.records.create({
+      data: userProfile,
+      message: {
         protocol: PROTOCOL_URI,
-        // schema: PROFILE_SCHEMA,
-      },
-    },
-  });
-
-  console.log(records, "the records");
-  let recordId = records.map((record) => {
-    console.log(record.id, "the id");
-    return record.id;
-  });
-
-  let { record } = await web5.dwn.records.read({
-    message: {
-      filter: {
-        recordId: recordId[0],
-      },
-    },
-  });
-
-  // assuming the record has a text payload
-  const text = await record.data.json();
-  console.log(text, "gotcha");
-  return text;
-};
-
-// NOTE: private, public and shared space should have thier own protocol
-export const createSpace = async () => {
-  const web5 = useStore.getState().web5;
-  const myDid = useStore.getState().myDid;
-
-  const { record, status } = await web5.dwn.records.create({
-    data: {
-      name: "my images",
-      description: 90,
-      type: "private",
-    },
-    message: {
-      protocol: PROTOCOL_URI,
-      protocolPath: "space",
-      schema: SPACE_SCHEMA,
-      recipient: myDid,
-      dataFormat: "application/json",
-    },
-  });
-
-  console.log(status, "status");
-};
-
-export const readSpace = async () => {
-  const web5 = useStore.getState().web5;
-  const did = useStore.getState().myDid;
-
-  const { records } = await web5.dwn.records.query({
-    message: {
-      filter: {
-        // protocol: PROTOCOL_URI,
+        protocolPath: "space",
         schema: SPACE_SCHEMA,
-      },
-    },
-  });
-
-  console.log(records, "the records");
-  let recordId = records.map((record) => {
-    console.log(record.id, "the id");
-    return record.id;
-  });
-
-  let { record } = await web5.dwn.records.read({
-    message: {
-      filter: {
-        recordId: recordId[0],
-      },
-    },
-  });
-
-  // assuming the record has a text payload
-  const text = await record.data.json();
-  console.log(text, "gotcha");
-  return text;
-};
-
-export const createPublicSpace = async () => {
-  const web5 = useStore.getState().web5;
-  const myDid = useStore.getState().myDid;
-  const { record, status } = await web5.dwn.records.write({
-    data: { name: "precious space", desc: "this is my space" },
-    message: {
-      protocol: PROTOCOL_URI,
-      protocolPath: "publicSpace",
-      schema: PUBLIC_SPACE_SCHEMA,
-      dataFormat: "application/json",
-      published: true,
-    },
-  });
-
-  // let remotedwn = await record.send(myDid);
-  console.log(record, "hello all my users");
-  // console.log(remotedwn, "hello all my users");
-};
-
-export const readPublicSpace = async () => {
-  const web5 = useStore.getState().web5;
-  let record = await web5.dwn.records.query({
-    message: {
-      filter: {
-        schema: PUBLIC_SPACE_SCHEMA,
         dataFormat: "application/json",
       },
-    },
-  });
+    });
 
-  console.log(record, "hello all my records");
+    if (status.code === 202) {
+      console.log(userProfile, "userProfile");
+      console.log(record, "the returned record");
+      const { status: remoteDwnStatus } = await record.send(myDid);
+
+      if (remoteDwnStatus.code === 202) {
+        return {
+          success: true,
+          message: "space created successfully",
+        };
+      }
+    }
+  } catch (error) {
+    console.error(error, "error message");
+    return {
+      success: false,
+      message: "Something went wrong",
+    };
+  }
+};
+
+// read space
+export const getUserSpace = async () => {
+  try {
+    const web5 = useStore.getState().web5;
+    const myDid = useStore.getState().myDid;
+
+    // getting the space records
+    const { records } = await web5.dwn.records.query({
+      from: myDid,
+      message: {
+        filter: {
+          schema: SPACE_SCHEMA,
+        },
+      },
+    });
+
+    // declare myspace
+    let mySpace = [];
+
+    // mapping throught the mixed records
+    let spaceRecords = records.map(async (record) => {
+      let { record: space } = await web5.dwn.records.read({
+        message: {
+          filter: {
+            recordId: record.id,
+          },
+        },
+      });
+
+      // querying the record data in json
+      const spaces = await space.data.json();
+
+      // if spaces, add to the array
+      if (spaces) {
+        mySpace.push(spaces);
+      }
+    });
+
+    // Wait for all promises to resolve
+    Promise.all(spaceRecords)
+      .then(() => {
+        // All asynchronous operations completed
+        console.log("All spaces fetched:", mySpace);
+        return mySpace;
+      })
+      .catch((error) => {
+        console.error("Error fetching spaces:", error);
+      });
+  } catch (error) {
+    console.error("Something went wrong", error);
+    return {
+      success: false,
+      message: "Something went  wrong",
+    };
+  }
 };
