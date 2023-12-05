@@ -19,9 +19,18 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  createProfile,
+  createSpace,
+  initWeb5,
+  readProfile,
+} from "@/store/Store";
 import { useEffect, useState } from "react";
 
 const Spaces = () => {
+  // createProfile({ name: "precious", age: 9000 });
+  // readProfile()
+
   const [toggleSpaceFileCreation, setToggleSpaceFileCreation] = useState(false);
 
   // space data
@@ -37,11 +46,7 @@ const Spaces = () => {
   const [fileSpace, setFileSpace] = useState("");
   const [fileUpload, setFileUpload] = useState("");
 
-  useEffect(() => {
-    console.log(fileSpace, fileUpload);
-  }, [fileSpace, fileUpload]);
-
-  //   handle image upload for space cover
+  // handle image upload for space cover
   async function handleSpaceImageUpload(event) {
     const file = await event.target.files[0];
 
@@ -50,7 +55,7 @@ const Spaces = () => {
     }
   }
 
-  //   handle space file upload
+  // handle space file upload
   async function handleSpaceFileUpload(event) {
     const file = await event.target.files[0];
 
@@ -77,8 +82,36 @@ const Spaces = () => {
     console.log({ fileSpace, fileUpload });
   }
 
+  useEffect(() => {
+    const handleInitWeb5 = async () => {
+      await initWeb5();
+    };
+
+    handleInitWeb5();
+  }, []);
+
+  async function handleProfileRead(params) {
+    const profile = await readProfile();
+    console.log(profile, "the profile");
+  }
+
   return (
     <section className="relative">
+      <button onClick={() => createProfile({ name: "precious", age: 200 })}>
+        create profile
+      </button>
+      <button onClick={handleProfileRead}>read profile</button>
+      <button
+        onClick={() =>
+          createSpace({
+            spaceName: "my video space",
+            spaceDesc: "this space is about my platform",
+          })
+        }
+      >
+        create space
+      </button>
+      <button onClick={getUserSpace}>get user space</button>
       <main className="">
         <Tabs defaultValue="privateSpace" className="w-full ">
           <div className="my-6 sticky top-[5rem] z-[10]">
