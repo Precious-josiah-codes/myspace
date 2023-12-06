@@ -1,4 +1,3 @@
-// import { Web5 } from "@web5/api";
 import { create } from "zustand";
 
 let PROTOCOL_URI =
@@ -502,9 +501,8 @@ export const useStore = create((set) => ({
 
 // create DID, Connect to web5
 export const initWeb5 = async () => {
-  const { Web5 } = await import("@web5/api/browser");
-
   console.log("Initializing web 5");
+  const { Web5 } = await import("@web5/api/browser");
   const { web5, did } = await Web5.connect();
 
   // setting the web5 and did state
