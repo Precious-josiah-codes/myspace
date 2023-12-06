@@ -4,6 +4,7 @@ import Sidebar from "@/components/custom/DesktopSidebar";
 import Navbar from "@/components/custom/Navbar";
 // import Navbar from "@/sections/Navbar";
 import { Inter, Poppins } from "next/font/google";
+import { useEffect, useState } from "react";
 
 const poppins = Inter({
   subsets: ["latin"],
@@ -11,12 +12,16 @@ const poppins = Inter({
 });
 
 export default function DashboardLayout({ children }) {
-  console.log();
+  const [profile, setProfile] = useState(false);
 
-  const profile = localStorage.getItem("profile");
-  if (!profile) {
-    location.href = "/createdid";
-  }
+  useEffect(() => {
+    const profile = localStorage.getItem("profile");
+    if (!profile) {
+      window.location.href = "/createdid";
+      return;
+    }
+    setProfile(true);
+  }, []);
   return (
     <main className={`${poppins.className}`}>
       {/* desktop side bar */}
