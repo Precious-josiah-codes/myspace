@@ -6,3 +6,33 @@
 .color1 {
     background-color: #19BFBF;
 }
+
+.custom_font1 {
+    font-family: calibri;
+}
+
+body {
+    background-color: #e6e6e636;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* Track */
+.sidebar::-webkit-scrollbar-track {
+  background: #888;
+  background: #03290d;
+  border-radius: 10px;
+}
+
+/* Handle */
+.sidebar::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #18BEBE;
+}
+
+/* Handle on hover */
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background:  #18BEBE;
+}

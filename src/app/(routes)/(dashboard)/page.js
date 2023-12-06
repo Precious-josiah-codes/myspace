@@ -1,98 +1,34 @@
 "use client";
-import {
-  createProfile,
-  createPublicSpace,
-  createRecord,
-  createSpace,
-  getProfile,
-  getUserSpace,
-  initWeb5,
-  readPublicSpace,
-  readSpace,
-  tryFetch,
-} from "@/store/Store";
-import { useEffect, useState } from "react";
+
+import SpaceCard from "@/components/custom/SpaceCard";
+import { useStore } from "@/store/Store";
+import { usePathname } from "next/navigation";
 
 export default function Home() {
-  const [profileImage, setProfileImage] = useState(null);
-  const [image, setImage] = useState(null);
-  const [name, setName] = useState("");
-  const [gender, setGender] = useState("");
-
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      setProfileImage(file);
-    }
-  };
-
-  useEffect(() => {
-    const handleInitWeb5 = async () => {
-      await initWeb5();
-    };
-
-    handleInitWeb5();
-  }, []);
+  const [spaces] = useStore((state) => [state.spaces]);
 
   return (
-    <main>
-      <h1 className="text-red-900">My Space APP</h1>
-      <p>Building a decentralized cloud storage infastructure</p>
+    <main className="space-y-6 pt-6">
+      <h1 className="text-black font-bold">Welcome Lily</h1>
 
-      {/* create profile */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          createProfile({ name, profileImage, gender });
-        }}
-      >
-        <input
-          type="text"
-          placeholder="enter name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="enter gender"
-          value={gender}
-          onChange={(e) => setGender(e.target.value)}
-        />
-        <input type="file" onChange={handleFileChange} />
-        <button>Create profile</button>
-      </form>
+      <div>
+        <h1 className="mb-5">
+          Featured Spaces{"   "}
+          <span className="bg-teal-500 rounded-full px-3 text-white text-sm">
+            {spaces.filter((space) => space.spacePrivacy !== "private").length}
+          </span>
+        </h1>
 
-      {/* <button onClick={handleFetch}>Query all data</button>
-      <button onClick={createRecord}>create data</button> */}
-      <button
-        onClick={() =>
-          createSpace({ name: "precious", spaceImage: profileImage })
-        }
-      >
-        create space
-      </button>
-      <button onClick={getUserSpace}>get user space</button>
-      {/* <button onClick={handleReadSpace}>read space</button>
-      <button onClick={createPublicSpace}>create public space</button>
-      <button onClick={readPublicSpace}>read public space</button> */}
-
-      <img
-        src={`data:image/jpg;base64,${image}`} // Include the appropriate MIME type
-        alt="Profile Image" // Alt text for accessibility
-        width={300} // Set the width of the image
-        height={300} // Set the height of the image
-      />
+        <section className="grid grid-cols-3 gap-6">
+          {spaces
+            .filter((space) => space.spacePrivacy !== "private")
+            .map((space, index) => (
+              <div key={index}>
+                <SpaceCard path="space" space={space} />
+              </div>
+            ))}
+        </section>
+      </div>
     </main>
   );
-
-  async function handleFetch() {
-    const data = await getProfile();
-    setImage(data.profileImage);
-    console.log(data, "the data");
-  }
-  async function handleReadSpace() {
-    const data = await readSpace();
-    console.log(data, "the data");
-  }
 }

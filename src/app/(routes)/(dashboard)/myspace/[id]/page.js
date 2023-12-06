@@ -17,25 +17,26 @@ import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 const Space = () => {
-  const [spaces] = useStore((state) => [state.spaces]);
+  const [mySpaces] = useStore((state) => [state.mySpaces]);
   const [spaceFile, setSpaceFileUpload] = useState(null);
   const pathName = usePathname();
   const params = useParams();
   console.log(params.id, "params");
 
-  const [space] = useState(spaces.filter((space) => space.id === params.id));
+  console.log(mySpaces, "the space");
+  const [space] = useState(mySpaces.filter((space) => space.id === params.id));
+  console.log(space, "the space");
   const {
     spaceName,
     spaceAuthorProfile,
     spaceAuthor,
+    spaceDescription,
     spaceImage,
     spaceFiles,
     spaceSubscribers,
     spaceMonetization,
     spacePrivacy,
   } = space[0];
-
-  console.log(space, "the space");
 
   //   handle file upload
   async function handleFileUpload(event) {
@@ -68,9 +69,9 @@ const Space = () => {
               className="relative"
             />
           </div>
-          <div className="bg-[#00000027] text-white absolute h-[300px] w-full z-10 top-0 flex items-end">
+          <div className="bg-[#00000027] text-white absolute h-[300px] w-full z-[9] top-0 flex items-end">
             <div className="flex justify-between items-end px-6 mb-[2rem] relative w-full">
-              <div className="flex items-center space-x-3">
+              <div className="flex space-x-3">
                 <div className="h-[2.7rem] w-[2.7rem] rounded-full overflow-hidden relative bg-black text-white inline-flex justify-center items-center">
                   <div>{spaceAuthorProfile}</div>
                 </div>
@@ -78,6 +79,7 @@ const Space = () => {
                 <div>
                   <h1 className="font-semibold">{spaceAuthor}</h1>
                   <p>{spaceName}</p>
+                  <p className="text-gray-300">{spaceDescription}</p>
                 </div>
               </div>
               <div className="flex space-x-4">
@@ -100,33 +102,32 @@ const Space = () => {
 
                   <div>{spaceFiles.length}</div>
                 </div>
-
                 {/* total users subcribed */}
-                <div className="bg-white text-black px-2 rounded-md text-bold flex items-center space-x-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                    className="w-4 h-4"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                    />
-                  </svg>
-                  <div>{spaceSubscribers}</div>
-                </div>
-
+                {spacePrivacy !== "private" && (
+                  <div className="bg-white text-black px-2 rounded-md text-bold flex items-center space-x-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                      />
+                    </svg>
+                    <div>{spaceSubscribers}</div>
+                  </div>
+                )}
                 {/* moentization type */}
-                <h1 className="color1 text-white px-2 rounded-md text-bold">
-                  {spaceMonetization === "yes" ? "Paid" : "Free"}
-                </h1>
-                <h1 className="  px-3 rounded-md text-bold cursor-pointer color1 text-white">
-                  Subscribe
-                </h1>
+                {spacePrivacy !== "private" && (
+                  <h1 className="color1 text-white px-2 rounded-md text-bold">
+                    {spaceMonetization === "yes" ? "Paid" : "Free"}
+                  </h1>
+                )}
               </div>
             </div>
           </div>
@@ -136,12 +137,14 @@ const Space = () => {
         {spaceFiles?.length === 0 ? (
           <div className="w-full mt-11 text-center">
             <h1 className="w-[30rem] mx-auto">
-              {`${spaceAuthor} has not
-              published any file to this space`}
+              {spacePrivacy === "shared"
+                ? `${spaceAuthor} has not not`
+                : "You haven't "}{" "}
+              published any file to this space
             </h1>
           </div>
         ) : (
-          <section className="grid grid-cols-3 gap-6 mt-9 w-full">
+          <section className="grid grid-cols-3 gap-6 mt-9">
             {spaceFiles.map((file, index) => (
               <div key={index}>
                 <FileCard file={file} isMoreOption={false} />

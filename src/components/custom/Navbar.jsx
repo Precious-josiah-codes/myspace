@@ -2,8 +2,78 @@
 
 import Image from "next/image";
 import { Input } from "../ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Navbar = () => {
+  const notifications = [
+    {
+      id: 1,
+      profile: "A",
+      message: "James is requesting access to Movies night",
+      notificationType: "access request",
+    },
+    {
+      id: 2,
+      profile: "L",
+      message: "Lily rejected access to your Movies Night",
+      notificationType: "deny request",
+    },
+    {
+      id: 3,
+      profile: "N",
+      message: "Ngozika just subscribed to Beats",
+      notificationType: "subscribed",
+    },
+    {
+      id: 4,
+      profile: "J",
+      message: "James  is requesting access to Movies Night",
+      notificationType: "access request",
+    },
+    {
+      id: 5,
+      profile: "K",
+      message: "Ken  is requesting access to Sports Cafe",
+      notificationType: "access request",
+    },
+    {
+      id: 6,
+      profile: "O",
+      message: "Obed is requesting access to Travels Explore",
+      notificationType: "access request",
+    },
+    {
+      id: 7,
+      profile: "G",
+      message: "Golden just subscribed to Lilys Adventure",
+      notificationType: "subscribed",
+    },
+    {
+      id: 8,
+      profile: "N",
+      message: "Ngozika just subscribed to Lilys Adventure",
+      notificationType: "subscribed",
+    },
+    {
+      id: 9,
+      profile: "M",
+      message: "McDonald just subscribed to your space",
+      notificationType: "subscribed",
+    },
+    {
+      id: 10,
+      profile: "B",
+      message: "Benedict is requesting access to Travels Explore",
+      notificationType: "access request",
+    },
+  ];
   return (
     <section className="h-[5rem] sm:px-6 px-3 flex justify-between items-center text-black w-full sticky top-0 z-50 bg-white border-b border-[#5b58662d]">
       {/* search input */}
@@ -79,20 +149,53 @@ const Navbar = () => {
 
         {/* notification icon */}
         <div className="w-[2.7rem] h-[2.7rem] inline-flex items-center justify-center p-1 rounded-full relative">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-            />
-          </svg>
+          <Dialog className="w-[40rem]">
+            <DialogTrigger>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                />
+              </svg>
+            </DialogTrigger>
+            <DialogContent className="top-9 right-0 translate-x-0 translate-y-0  max-w-[40rem]">
+              <DialogHeader>
+                <DialogTitle>
+                  <h1 className="pb-[1.5rem]">Notifications</h1>
+                </DialogTitle>
+                <DialogDescription>
+                  <div className="space-y-6 h-[25rem] overflow-y-auto sidebar">
+                    {notifications.map((notification) => (
+                      <div className="flex justify-between items-center w-full">
+                        <div className="h-[2.7rem] w-[2.7rem] rounded-full overflow-hidden relative bg-black text-white inline-flex justify-center items-center">
+                          <div>PR</div>
+                        </div>
+                        <p className="text-base   flex-1 pl-3">
+                          Admin 2 requested access to your space named Spiro
+                        </p>
+                        <div className="flex space-x-3">
+                          <button className="py-2 px-3 bg-teal-500 text-white rounded-lg text-base">
+                            Accept
+                          </button>
+                          <button className="py-2 px-3 border border-black rounded-lg text-base">
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* profile */}
