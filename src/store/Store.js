@@ -67,9 +67,437 @@ let protocolDefinition = {
   },
 };
 
-const useStore = create((set) => ({
+export const useStore = create((set) => ({
   web5: null,
   myDid: null,
+  spaces: [
+    {
+      id: "1",
+      spaceName: "Dreamy Music Space",
+      spaceAuthor: "David",
+      spaceAuthorProfile: "D",
+      spaceDescription: "A space for music enthusiasts",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$150",
+      spaceTags: "music, instruments, melody",
+      spaceImage:
+        "https://images.pexels.com/photos/33597/guitar-classical-guitar-acoustic-guitar-electric-guitar.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/9517380/pexels-photo-9517380.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Lovely day music video",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/6532373/pexels-photo-6532373.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Champion",
+        },
+        {
+          id: 3,
+          fileThumbNail:
+            "https://images.pexels.com/photos/934067/pexels-photo-934067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "document",
+          fileName: "Music Proposal",
+        },
+        {
+          id: 4,
+          fileThumbNail:
+            "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "audio",
+          fileName: "Relaxing Music",
+        },
+        {
+          id: 5,
+          fileThumbNail:
+            "https://images.pexels.com/photos/1267350/pexels-photo-1267350.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "image",
+          fileName: "Let's Party",
+        },
+        {
+          id: 6,
+          fileThumbNail:
+            "https://images.pexels.com/photos/5935232/pexels-photo-5935232.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Cityscape Timelapse",
+        },
+      ],
+      spaceSubscribers: 15,
+    },
+    {
+      id: "2",
+      spaceName: "Gaming Universe",
+      spaceAuthor: "Gina",
+      spaceAuthorProfile: "G",
+      spaceDescription: "Discuss and share your gaming experiences",
+      spacePrivacy: "public",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "gaming, video games, esports",
+      spaceImage:
+        "https://images.pexels.com/photos/275033/pexels-photo-275033.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/260024/pexels-photo-260024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Win in 3 moves",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Super Mario",
+        },
+
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "document",
+          fileName: "Football Cheat Sheet",
+        },
+        {
+          id: 3,
+          fileThumbNail:
+            "https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Super Mario",
+        },
+      ],
+      spaceSubscribers: 12,
+    },
+    {
+      id: "3",
+      spaceName: "Tech Talk Forum",
+      spaceAuthor: "Tom",
+      spaceAuthorProfile: "T",
+      spaceDescription: "Explore the latest in technology",
+      spacePrivacy: "private",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "technology, gadgets, innovation",
+      spaceImage:
+        "https://images.pexels.com/photos/3183183/pexels-photo-3183183.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/6953827/pexels-photo-6953827.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Talk with Alma CEO",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/8349343/pexels-photo-8349343.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "image",
+          fileName: "Short Interview with me",
+        },
+      ],
+      spaceSubscribers: 0,
+    },
+    {
+      id: "4",
+      spaceName: "Healthy Living Hub",
+      spaceAuthor: "Hannah",
+      spaceAuthorProfile: "H",
+      spaceDescription: "Share tips for a healthy lifestyle",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$100",
+      spaceTags: "health, wellness, fitness",
+      spaceImage:
+        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 8,
+    },
+    {
+      id: "5",
+      spaceName: "Travel Diaries",
+      spaceAuthor: "Tyler",
+      spaceAuthorProfile: "T",
+      spaceDescription: "Explore the world through travel stories",
+      spacePrivacy: "private",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "travel, adventure, exploration",
+      spaceImage:
+        "https://images.pexels.com/photos/287240/pexels-photo-287240.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 0,
+    },
+    {
+      id: "6",
+      spaceName: "Cooking Corner",
+      spaceAuthor: "Catherine",
+      spaceAuthorProfile: "C",
+      spaceDescription: "Share and discover delicious recipes",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$180",
+      spaceTags: "cooking, recipes, food",
+      spaceImage:
+        "https://images.pexels.com/photos/691114/pexels-photo-691114.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/2890387/pexels-photo-2890387.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Cook with me",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/691114/pexels-photo-691114.jpeg?auto=compress&cs=tinysrgb&w=600",
+          fileType: "document",
+          fileName: "My Secret CookBook",
+        },
+      ],
+      spaceSubscribers: 18,
+    },
+    {
+      id: "7",
+      spaceName: "Fitness Fanatics",
+      spaceAuthor: "Frank",
+      spaceAuthorProfile: "F",
+      spaceDescription: "Connect with fellow fitness enthusiasts",
+      spacePrivacy: "public",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "fitness, workout, exercise",
+      spaceImage: "https://images.pexels.com/photos/28080/pexels-photo.jpg",
+      spaceFiles: [],
+      spaceSubscribers: 25,
+    },
+    {
+      id: "8",
+      spaceName: "Artistic Expression",
+      spaceAuthor: "Alice",
+      spaceAuthorProfile: "A",
+      spaceDescription: "Celebrate creativity in all forms",
+      spacePrivacy: "private",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "art, creativity, design",
+      spaceImage:
+        "https://images.pexels.com/photos/6941452/pexels-photo-6941452.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/102127/pexels-photo-102127.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "My first art",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/19200200/pexels-photo-19200200/free-photo-of-abstract-photo-of-a-melt-red-paint.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Digital Painting",
+        },
+      ],
+      spaceSubscribers: 0,
+    },
+    {
+      id: "9",
+      spaceName: "Photography Passion",
+      spaceAuthor: "Peter",
+      spaceAuthorProfile: "P",
+      spaceDescription: "Showcase and discuss photography",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$250",
+      spaceTags: "photography, camera, photos",
+      spaceImage:
+        "https://images.pexels.com/photos/2179205/pexels-photo-2179205.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 14,
+    },
+    {
+      id: "10",
+      spaceName: "Science Explorers",
+      spaceAuthor: "Samantha",
+      spaceAuthorProfile: "S",
+      spaceDescription: "Dive into the wonders of science",
+      spacePrivacy: "private",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "science, discovery, knowledge",
+      spaceImage:
+        "https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 0,
+    },
+  ],
+  mySpaces: [
+    {
+      id: "1",
+      spaceName: "Tech Talks",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Discuss the latest in technology with Lily",
+      spacePrivacy: "private",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "technology, gadgets, innovation",
+      spaceImage:
+        "https://images.pexels.com/photos/1181268/pexels-photo-1181268.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/6953827/pexels-photo-6953827.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Talk with Alma CEO",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/8349343/pexels-photo-8349343.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "image",
+          fileName: "Short Interview with me",
+        },
+        {
+          id: 3,
+          fileThumbNail:
+            "https://images.pexels.com/photos/6954162/pexels-photo-6954162.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "audio",
+          fileName: "Catch me on air",
+        },
+      ],
+      spaceSubscribers: 18,
+    },
+    {
+      id: "2",
+      spaceName: "Lily's Travel Adventures",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Share and explore exciting travel stories",
+      spacePrivacy: "public",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "travel, adventure, exploration",
+      spaceImage:
+        "https://images.pexels.com/photos/12660667/pexels-photo-12660667.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [
+        {
+          id: 1,
+          fileThumbNail:
+            "https://images.pexels.com/photos/844167/pexels-photo-844167.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "video",
+          fileName: "Road trip to Australia",
+        },
+        {
+          id: 2,
+          fileThumbNail:
+            "https://images.pexels.com/photos/6141092/pexels-photo-6141092.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+          fileType: "image",
+          fileName: "Photos with the boys #Australia",
+        },
+      ],
+      spaceSubscribers: 20,
+    },
+    {
+      id: "3",
+      spaceName: "Lily's Creative Corner",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Express your creativity in Lily's artistic space",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$150",
+      spaceTags: "art, design, creativity",
+      spaceImage:
+        "https://images.pexels.com/photos/256514/pexels-photo-256514.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 15,
+    },
+    {
+      id: "4",
+      spaceName: "Lily's Fitness Zone",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Join Lily in staying fit and healthy",
+      spacePrivacy: "private",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "fitness, workout, exercise",
+      spaceImage:
+        "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 25,
+    },
+    {
+      id: "5",
+      spaceName: "Lily's Culinary Delights",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Explore the world of delicious recipes with Lily",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$220",
+      spaceTags: "cooking, recipes, food",
+      spaceImage:
+        "https://images.pexels.com/photos/248444/pexels-photo-248444.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 22,
+    },
+    {
+      id: "6",
+      spaceName: "Photography Passion",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Capture beautiful moments in Lily's photography space",
+      spacePrivacy: "public",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "photography, camera, photos",
+      spaceImage:
+        "https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 14,
+    },
+    {
+      id: "7",
+      spaceName: "Science Hub",
+      spaceAuthor: "Lily",
+      spaceAuthorProfile: "L",
+      spaceDescription: "Explore the wonders of science with Lily",
+      spacePrivacy: "public",
+      spaceMonetization: "yes",
+      spacePrice: "$180",
+      spaceTags: "science, discovery, knowledge",
+      spaceImage:
+        "https://images.pexels.com/photos/356040/pexels-photo-356040.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 20,
+    },
+    {
+      id: "8",
+      spaceName: "Nasa Space Camp",
+      spaceAuthor: "Nasa",
+      spaceAuthorProfile: "N",
+      spaceDescription: "Discussing space invations",
+      spacePrivacy: "shared",
+      spaceMonetization: "no",
+      spacePrice: null,
+      spaceTags: "space, planet, space tech",
+      spaceImage:
+        "https://images.pexels.com/photos/8474959/pexels-photo-8474959.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      spaceFiles: [],
+      spaceSubscribers: 40,
+    },
+  ],
 }));
 
 // create DID, Connect to web5

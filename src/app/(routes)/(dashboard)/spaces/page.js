@@ -19,18 +19,18 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  createProfile,
-  createSpace,
-  initWeb5,
-  readProfile,
-} from "@/store/Store";
-import { useEffect, useState } from "react";
+import { useStore } from "@/store/Store";
+import { usePathname } from "next/navigation";
+
+import { useState } from "react";
 
 const Spaces = () => {
-  // createProfile({ name: "precious", age: 9000 });
-  // readProfile()
-
+  const [$mySpaces] = useStore((state) => [state.mySpaces]);
+  const mySpaces = Object.groupBy(
+    $mySpaces,
+    ({ spacePrivacy }) => spacePrivacy
+  );
+  console.log(mySpaces);
   const [toggleSpaceFileCreation, setToggleSpaceFileCreation] = useState(false);
 
   // space data
@@ -82,47 +82,19 @@ const Spaces = () => {
     console.log({ fileSpace, fileUpload });
   }
 
-  useEffect(() => {
-    const handleInitWeb5 = async () => {
-      await initWeb5();
-    };
-
-    handleInitWeb5();
-  }, []);
-
-  async function handleProfileRead(params) {
-    const profile = await readProfile();
-    console.log(profile, "the profile");
-  }
-
   return (
     <section className="relative">
-      <button onClick={() => createProfile({ name: "precious", age: 200 })}>
-        create profile
-      </button>
-      <button onClick={handleProfileRead}>read profile</button>
-      <button
-        onClick={() =>
-          createSpace({
-            spaceName: "my video space",
-            spaceDesc: "this space is about my platform",
-          })
-        }
-      >
-        create space
-      </button>
-      <button onClick={getUserSpace}>get user space</button>
       <main className="">
         <Tabs defaultValue="privateSpace" className="w-full ">
           <div className="my-6 sticky top-[5rem] z-[10]">
             <TabsList className="grid w-full grid-cols-3 bg-white text-base rounded-none">
-              <TabsTrigger value="privateSpace" className="bg-[#e6e6e636]">
+              <TabsTrigger value="privateSpace" className="bg-[#e6e6e667]">
                 Private Space
               </TabsTrigger>
-              <TabsTrigger value="publicSpace" className="bg-[#e6e6e636]">
+              <TabsTrigger value="publicSpace" className="bg-[#e6e6e667]">
                 Public Space
               </TabsTrigger>
-              <TabsTrigger value="sharedSpace" className="bg-[#e6e6e636]">
+              <TabsTrigger value="sharedSpace" className="bg-[#e6e6e667]">
                 Shared Space
               </TabsTrigger>
             </TabsList>
@@ -131,9 +103,9 @@ const Spaces = () => {
           {/* private space */}
           <TabsContent value="privateSpace">
             <section className="grid grid-cols-3 gap-6">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((space, index) => (
+              {mySpaces.private.map((space, index) => (
                 <div key={index}>
-                  <SpaceCard />
+                  <SpaceCard path="myspace" space={space} />
                 </div>
               ))}
             </section>
@@ -142,9 +114,9 @@ const Spaces = () => {
           {/* public space */}
           <TabsContent value="publicSpace">
             <section className="grid grid-cols-3 gap-6">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((space, index) => (
+              {mySpaces.public.map((space, index) => (
                 <div key={index}>
-                  <SpaceCard />
+                  <SpaceCard path="myspace" space={space} />
                 </div>
               ))}
             </section>
@@ -153,9 +125,9 @@ const Spaces = () => {
           {/* shared space */}
           <TabsContent value="sharedSpace">
             <section className="grid grid-cols-3 gap-6">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((space, index) => (
+              {mySpaces.shared.map((space, index) => (
                 <div key={index}>
-                  <SpaceCard />
+                  <SpaceCard path="myspace" space={space} />
                 </div>
               ))}
             </section>
