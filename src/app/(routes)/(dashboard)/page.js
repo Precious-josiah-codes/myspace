@@ -2,7 +2,6 @@
 
 import SpaceCard from "@/components/custom/SpaceCard";
 import { useStore } from "@/store/Store";
-import { usePathname } from "next/navigation";
 
 export default function Home() {
   const [spaces] = useStore((state) => [state.spaces]);

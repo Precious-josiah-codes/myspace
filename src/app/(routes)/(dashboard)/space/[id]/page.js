@@ -1,7 +1,5 @@
 "use client";
 import FileCard from "@/components/custom/FileCard";
-import SpaceCard from "@/components/custom/SpaceCard";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,13 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStore } from "@/store/Store";
 import Image from "next/image";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
 
 const Space = () => {
   const [spaces] = useStore((state) => [state.spaces]);
   const [spaceFile, setSpaceFileUpload] = useState(null);
-  const pathName = usePathname();
   const params = useParams();
   console.log(params.id, "params");
 
@@ -32,7 +29,6 @@ const Space = () => {
     spaceFiles,
     spaceSubscribers,
     spaceMonetization,
-    spacePrivacy,
   } = space[0];
 
   console.log(space, "the space");

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 
-const createProfile = () => {
+const CreateProfile = () => {
   const router = useRouter();
   function handleProfileCreation() {
     localStorage.setItem("profile", "team pere");
@@ -45,4 +45,4 @@ const createProfile = () => {
   );
 };
 
-export default createProfile;
+export default CreateProfile;
