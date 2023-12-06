@@ -25,11 +25,20 @@ import { useState } from "react";
 
 const Spaces = () => {
   const [$mySpaces] = useStore((state) => [state.mySpaces]);
-  const mySpaces = Object.groupBy(
-    $mySpaces,
-    ({ spacePrivacy }) => spacePrivacy
-  );
-  console.log(mySpaces);
+
+  // grouping spaces
+  const { privateSpace, publicSpace, sharedSpace } = {
+    privateSpace: $mySpaces.filter(
+      (mySpace) => mySpace.spacePrivacy === "private"
+    ),
+    publicSpace: $mySpaces.filter(
+      (mySpace) => mySpace.spacePrivacy === "private"
+    ),
+    sharedSpace: $mySpaces.filter(
+      (mySpace) => mySpace.spacePrivacy === "private"
+    ),
+  };
+  console.log(privateSpace, publicSpace, sharedSpace);
   const [toggleSpaceFileCreation, setToggleSpaceFileCreation] = useState(false);
 
   // space data
@@ -102,7 +111,7 @@ const Spaces = () => {
           {/* private space */}
           <TabsContent value="privateSpace">
             <section className="grid grid-cols-3 gap-6">
-              {mySpaces.private.map((space, index) => (
+              {privateSpace.map((space, index) => (
                 <div key={index}>
                   <SpaceCard path="myspace" space={space} />
                 </div>
@@ -113,7 +122,7 @@ const Spaces = () => {
           {/* public space */}
           <TabsContent value="publicSpace">
             <section className="grid grid-cols-3 gap-6">
-              {mySpaces.public.map((space, index) => (
+              {publicSpace.map((space, index) => (
                 <div key={index}>
                   <SpaceCard path="myspace" space={space} />
                 </div>
@@ -124,7 +133,7 @@ const Spaces = () => {
           {/* shared space */}
           <TabsContent value="sharedSpace">
             <section className="grid grid-cols-3 gap-6">
-              {mySpaces.shared.map((space, index) => (
+              {sharedSpace.map((space, index) => (
                 <div key={index}>
                   <SpaceCard path="myspace" space={space} />
                 </div>
