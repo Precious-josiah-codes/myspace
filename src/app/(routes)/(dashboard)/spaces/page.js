@@ -20,7 +20,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useStore } from "@/store/Store";
-import { usePathname } from "next/navigation";
 
 import { useState } from "react";
 

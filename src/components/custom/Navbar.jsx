@@ -173,22 +173,27 @@ const Navbar = () => {
                 </DialogTitle>
                 <DialogDescription>
                   <div className="space-y-6 h-[25rem] overflow-y-auto sidebar">
-                    {notifications.map((notification) => (
-                      <div className="flex justify-between items-center w-full">
+                    {notifications.map((notification, index) => (
+                      <div
+                        className="flex justify-between items-center w-full"
+                        key={index}
+                      >
                         <div className="h-[2.7rem] w-[2.7rem] rounded-full overflow-hidden relative bg-black text-white inline-flex justify-center items-center">
-                          <div>PR</div>
+                          <div>{notification.profile}</div>
                         </div>
                         <p className="text-base   flex-1 pl-3">
-                          Admin 2 requested access to your space named Spiro
+                          {notification.message}
                         </p>
-                        <div className="flex space-x-3">
-                          <button className="py-2 px-3 bg-teal-500 text-white rounded-lg text-base">
-                            Accept
-                          </button>
-                          <button className="py-2 px-3 border border-black rounded-lg text-base">
-                            Decline
-                          </button>
-                        </div>
+                        {notification.notificationType === "access request" && (
+                          <div className="flex space-x-3">
+                            <button className="py-2 px-3 bg-teal-500 text-white rounded-lg text-base">
+                              Accept
+                            </button>
+                            <button className="py-2 px-3 border border-black rounded-lg text-base">
+                              Decline
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
