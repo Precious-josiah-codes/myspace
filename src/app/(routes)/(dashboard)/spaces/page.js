@@ -24,9 +24,6 @@ import { useStore } from "@/store/Store";
 import { useState } from "react";
 
 const Spaces = () => {
-  // createProfile({ name: "precious", age: 9000 });
-  // readProfile()
-
   const [toggleSpaceFileCreation, setToggleSpaceFileCreation] = useState(false);
 
   // space data
