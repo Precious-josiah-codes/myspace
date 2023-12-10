@@ -590,11 +590,11 @@ export const createProfile = async (data) => {
 
     // construct user profile
     const userProfile = {
-      ...data,
+      data,
       profileId: myDid,
       timestampWritten: `${currentDate} ${currentTime}`,
     };
-
+    console.log(userProfile)
     // writing the profile recod locally
     const { record, status } = await web5.dwn.records.create({
       data: userProfile,
@@ -614,7 +614,8 @@ export const createProfile = async (data) => {
     return true;
   } catch (error) {
     return false;
-    console.error("Error writing secret message to DWN", error);
+    console.log("errorooo")
+    console.log("Error writing secret message to DWN", error);
   }
 };
 

@@ -159,125 +159,127 @@ const Spaces = () => {
               </div>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] h-[25rem] overflow-y-auto sidebar">
-              <h1 className="text-lg text-center">Create your space</h1>
-              {/* create space form fields */}
-              <div className="grid gap-4 py-4">
-                {/* space name */}
-                <div>
-                  <Label htmlFor="spaceName">Give your space a name</Label>
-                  <Input
-                    className="mt-3"
-                    value={spaceName}
-                    onChange={(e) => setSpaceName(e.target.value)}
-                    placeholder="e.g Lily's Movie Space"
-                  />
-                </div>
+              <form>
+                <h1 className="text-lg text-center">Create your space</h1>
+                {/* create space form fields */}
+                <div className="grid gap-4 py-4">
+                  {/* space name */}
+                  <div>
+                    <Label htmlFor="spaceName">Give your space a name</Label>
+                    <Input
+                      className="mt-3"
+                      value={spaceName}
+                      onChange={(e) => setSpaceName(e.target.value)}
+                      placeholder="e.g Lily's Movie Space"
+                    />
+                  </div>
 
-                {/* space Description */}
-                <div>
-                  <Label htmlFor="spaceDescription">
-                    In few words describe your space
-                  </Label>
-                  <Textarea
-                    id="spaceDescription"
-                    className="mt-3"
-                    value={spaceDescription}
-                    onChange={(e) => setSpaceDescription(e.target.value)}
-                  />
-                </div>
-
-                {/* space privacy */}
-                <div className="w-full space-y-3">
-                  <Label htmlFor="spacePrivacy">Pick your space privacy</Label>
-                  <Select
-                    id="spacePrivacy"
-                    onValueChange={(value) => setSpacePrivacy(value)}
-                    className="mt-3"
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select privacy" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="public">Public</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* space monetization */}
-                {spacePrivacy === "public" && (
-                  <div className="w-full space-y-3">
-                    <Label htmlFor="spaceMonetization">
-                      Would you like to monetize your space
+                  {/* space Description */}
+                  <div>
+                    <Label htmlFor="spaceDescription">
+                      In few words describe your space
                     </Label>
+                    <Textarea
+                      id="spaceDescription"
+                      className="mt-3"
+                      value={spaceDescription}
+                      onChange={(e) => setSpaceDescription(e.target.value)}
+                    />
+                  </div>
+
+                  {/* space privacy */}
+                  <div className="w-full space-y-3">
+                    <Label htmlFor="spacePrivacy">Pick your space privacy</Label>
                     <Select
-                      id="spaceMonetization"
-                      onValueChange={(value) => setSpaceMonetization(value)}
+                      id="spacePrivacy"
+                      onValueChange={(value) => setSpacePrivacy(value)}
+                      className="mt-3"
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="YES/NO" />
+                        <SelectValue placeholder="Select privacy" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                        <SelectItem value="public">Public</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                )}
 
-                {/* space Price */}
-                {spaceMonetization === "yes" && (
+                  {/* space monetization */}
+                  {spacePrivacy === "public" && (
+                    <div className="w-full space-y-3">
+                      <Label htmlFor="spaceMonetization">
+                        Would you like to monetize your space
+                      </Label>
+                      <Select
+                        id="spaceMonetization"
+                        onValueChange={(value) => setSpaceMonetization(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="YES/NO" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* space Price */}
+                  {spaceMonetization === "yes" && (
+                    <div>
+                      <Label htmlFor="spacePrice">
+                        Set a price for your space ($ dollar)
+                      </Label>
+                      <Input
+                        type="number"
+                        id="spacePrice"
+                        className="mt-3"
+                        value={spacePrice}
+                        onChange={(e) => setSpacePrice(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {/* space Tags */}
                   <div>
-                    <Label htmlFor="spacePrice">
-                      Set a price for your space ($ dollar)
+                    <Label htmlFor="spaceTags">
+                      Enter tags to help index your space during search
                     </Label>
                     <Input
-                      type="number"
-                      id="spacePrice"
+                      id="spaceTags"
                       className="mt-3"
-                      value={spacePrice}
-                      onChange={(e) => setSpacePrice(e.target.value)}
+                      value={spaceTags}
+                      onChange={(e) => setSpaceTags(e.target.value)}
+                      placeholder="Dance, Books, Movies, Coding"
                     />
                   </div>
-                )}
 
-                {/* space Tags */}
-                <div>
-                  <Label htmlFor="spaceTags">
-                    Enter tags to help index your space during search
-                  </Label>
-                  <Input
-                    id="spaceTags"
-                    className="mt-3"
-                    value={spaceTags}
-                    onChange={(e) => setSpaceTags(e.target.value)}
-                    placeholder="Dance, Books, Movies, Coding"
-                  />
+                  {/* space image */}
+                  <div className="space-y-3">
+                    <Label htmlFor="spaceCoverImage">
+                      Pick a cover image for your space
+                    </Label>
+                    <Input
+                      id="spaceCoverImage"
+                      type="file"
+                      onChange={handleSpaceImageUpload}
+                    />
+                  </div>
                 </div>
 
-                {/* space image */}
-                <div className="space-y-3">
-                  <Label htmlFor="spaceCoverImage">
-                    Pick a cover image for your space
-                  </Label>
-                  <Input
-                    id="spaceCoverImage"
-                    type="file"
-                    onChange={handleSpaceImageUpload}
-                  />
-                </div>
-              </div>
-
-              {/* create space submit button */}
-              <DialogFooter>
-                <Button
-                  type="submit"
-                  className="w-full color1"
-                  onClick={handleSpaceCreation}
-                >
-                  Create Space
-                </Button>
-              </DialogFooter>
+                {/* create space submit button */}
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="w-full color1"
+                    onClick={handleSpaceCreation}
+                  >
+                    Create Space
+                  </Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
 

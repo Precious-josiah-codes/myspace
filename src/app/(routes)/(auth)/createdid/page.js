@@ -1,5 +1,8 @@
+'use client';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { initWeb5 } from "@/store/Store";
+import { useEffect } from "react";
 
 const CreateDid = () => {
   return (
