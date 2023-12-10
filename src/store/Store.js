@@ -1,3 +1,4 @@
+import { kv } from "@vercel/kv";
 import { create } from "zustand";
 
 let PROTOCOL_URI =
@@ -8,21 +9,138 @@ let PROFILE_SCHEMA =
   process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
     ? "https://myspace.app/profile"
     : "https://prod/myspace.app/profile";
-let PROFILE_PHOTO_SCHEMA =
-  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
-    ? "https://myspace.app/profile/profile_photo"
-    : "https://prod/myspace.app/profile/profile_photo";
 
-let SPACE_SCHEMA =
+let READ_PROFILE_SCHEMA =
   process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
-    ? "https://myspace.app/space"
-    : "https://prod/myspace.app/space";
+    ? "https://myspace.app/profile/readProfile"
+    : "https://prod/myspace.app/profile/readProfile";
+
+let PRIVATE_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/privateSpace"
+    : "https://prod/myspace.app/privateSpace";
+
 let PUBLIC_SPACE_SCHEMA =
   process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
-    ? "https://myspace.app/public_space"
-    : "https://prod/myspace.app/public_space";
+    ? "https://myspace.app/publicSpace"
+    : "https://prod/myspace.app/publicSpace";
+
+let READ_PRIVATE_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/readPrivateSpace"
+    : "https://prod/myspace.app/readPrivateSpace";
+
+let DELETE_UPDATE_PRIVATE_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/deleteUpdatePrivateSpace"
+    : "https://prod/myspace.app/deleteUpdatePrivateSpace";
+
+let READ_PUBLIC_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/readPublicSpace"
+    : "https://prod/myspace.app/readPublicSpace";
+
+let DELETE_UPDATE_PUBLIC_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/deleteUpdatePublicSpace"
+    : "https://prod/myspace.app/deleteUpdatePublicSpace";
+
+let DID_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/did"
+    : "https://prod/myspace.app/did";
 
 // protocol definition
+
+const protoxcolDefinition = {
+  protocol: "https://social-media.xyz",
+  published: true,
+  types: {
+    post: {
+      schema: "https://social-media.xyz/schemas/postSchema",
+      dataFormats: ["text/plain"],
+    },
+    reply: {
+      schema: "https://social-media.xyz/schemas/replySchema",
+      dataFormats: ["text/plain"],
+    },
+    image: {
+      dataFormats: ["image/jpeg"],
+    },
+    caption: {
+      schema: "https://social-media.xyz/schemas/captionSchema",
+      dataFormats: ["text/plain"],
+    },
+  },
+  structure: {
+    post: {
+      $actions: [
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+      reply: {
+        $actions: [
+          {
+            who: "recipient",
+            of: "post",
+            can: "write",
+          },
+          {
+            who: "author",
+            of: "post",
+            can: "write",
+          },
+        ],
+      },
+    },
+    image: {
+      $actions: [
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+      caption: {
+        $actions: [
+          {
+            who: "anyone",
+            can: "read",
+          },
+          {
+            who: "author",
+            of: "image",
+            can: "write",
+          },
+        ],
+      },
+      reply: {
+        $actions: [
+          {
+            who: "author",
+            of: "image",
+            can: "read",
+          },
+          {
+            who: "recipient",
+            of: "image",
+            can: "write",
+          },
+        ],
+      },
+    },
+  },
+};
+
 let protocolDefinition = {
   protocol: PROTOCOL_URI,
   published: true,
@@ -31,36 +149,62 @@ let protocolDefinition = {
       schema: PROFILE_SCHEMA,
       dataFormats: ["application/json"],
     },
-    space: {
-      schema: SPACE_SCHEMA,
+    privateSpace: {
+      schema: PRIVATE_SPACE_SCHEMA,
       dataFormats: ["application/json"],
     },
     publicSpace: {
       schema: PUBLIC_SPACE_SCHEMA,
       dataFormats: ["application/json"],
     },
-    image: {
-      schema: PROFILE_PHOTO_SCHEMA,
-      dataFormats: ["image/png", "image/jpeg"],
+    did: {
+      schema: DID_SCHEMA,
+      dataFormats: ["application/json"],
     },
   },
   structure: {
     profile: {
       $actions: [
         { who: "anyone", can: "write" },
-        { who: "anyone", can: "read" },
-      ],
-    },
-    space: {
-      $actions: [
-        { who: "anyone", can: "write" },
-        { who: "anyone", can: "read" },
+        { who: "author", of: "profile", can: "read" },
       ],
     },
     publicSpace: {
       $actions: [
-        { who: "anyone", can: "write" },
-        { who: "anyone", can: "read" },
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+    },
+    privateSpace: {
+      $actions: [
+        {
+          who: "author",
+          of: "privateSpace",
+          can: "read",
+        },
+        {
+          who: "author",
+          of: "privateSpace",
+          can: "write",
+        },
+      ],
+    },
+    did: {
+      $actions: [
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
       ],
     },
   },
@@ -497,13 +641,14 @@ export const useStore = create((set) => ({
       spaceSubscribers: 40,
     },
   ],
+  profile: {},
 }));
 
 // create DID, Connect to web5
 export const initWeb5 = async () => {
   console.log("Initializing web 5");
   const { Web5 } = await import("@web5/api/browser");
-  const { web5, did } = await Web5.connect();
+  const { web5, did } = await Web5.connect({ sync: "1s" });
 
   // setting the web5 and did state
   useStore.setState({ web5: web5 });
@@ -544,10 +689,19 @@ async function configureProtocol(web5, did) {
       );
 
       console.log(remoteProtocolStatus, "remoteprotocol status");
-      if (remoteProtocolStatus.code === 202)
+      if (remoteProtocolStatus.code === 202) {
         console.log("protocol installed remotely");
+        return {
+          success: true,
+          msg: "DID, Profile and Protocol has been successfully created and connected to Web5",
+        };
+      }
     } else {
       console.log("Protocol already installed");
+      return {
+        success: true,
+        msg: "Protocol, DID, already exist",
+      };
     }
   } catch (error) {
     console.error(error, "error");
@@ -557,13 +711,15 @@ async function configureProtocol(web5, did) {
 // querying local protocol
 async function queryProtocol(web5) {
   console.log("Querying protocol");
-  return await web5.dwn.protocols.query({
+  const protocol = await web5.dwn.protocols.query({
     message: {
       filter: {
         protocol: PROTOCOL_URI,
       },
     },
   });
+  console.log(protocol, "the protocol");
+  return protocol;
 }
 
 // install protocol
@@ -577,8 +733,8 @@ async function installProtocol(web5, protocolDefinition) {
 }
 
 // create profile
-export const createProfile = async (data) => {
-  console.log(data, "tprofile data");
+export const createProfile = async (fullName) => {
+  console.log("creating profile.....");
   try {
     // destructuring the data
     const myDid = useStore.getState().myDid;
@@ -590,7 +746,7 @@ export const createProfile = async (data) => {
 
     // construct user profile
     const userProfile = {
-      ...data,
+      fullName,
       profileId: myDid,
       timestampWritten: `${currentDate} ${currentTime}`,
     };
@@ -611,10 +767,19 @@ export const createProfile = async (data) => {
     const { status: myDidStatus } = await record.send(myDid);
     console.log("data written to local DWN", { record, status });
     console.log("data written to remote DWN", { myDidStatus });
-    return true;
+
+    // return the response
+    return {
+      success: true,
+      data: "User profile has been successfully written to DWN",
+    };
   } catch (error) {
-    return false;
     console.error("Error writing secret message to DWN", error);
+    // return the response
+    return {
+      success: false,
+      data: "Please try again!, couldnt write to DWN",
+    };
   }
 };
 
@@ -624,6 +789,8 @@ export const readProfile = async () => {
   try {
     const web5 = useStore.getState().web5;
     const myDid = useStore.getState().myDid;
+
+    // querying the profile record
     const response = await web5.dwn.records.query({
       from: myDid,
       message: {
@@ -633,71 +800,146 @@ export const readProfile = async () => {
       },
     });
 
+    // checking if quering records was successfull
     if (response.status.code === 200) {
-      const userMessages = await Promise.all(
+      const profileRecord = await Promise.all(
         response.records.map(async (record) => {
           const data = await record.data.json();
           return data;
         })
       );
-      return userMessages;
-    } else {
-      console.error("Error fetching sent messages:", response.status);
-      return [];
+
+      // setting the state of the profile
+      useStore.setState({ profile: profileRecord[0] });
+
+      // return profile record
+      return {
+        success: true,
+      };
     }
   } catch (error) {
     console.error("Error in fetchSentMessages:", error);
+
+    // return error
+    return {
+      success: false,
+      data: "ooppss something went wrong, please try again",
+    };
   }
 };
+
+// TODO: ADD THE SPACE RECORD ID TO THE SPACE DATA AS KEY id, WHEN READING THE DATA
 
 // create space
 export const createSpace = async (data) => {
   try {
     const web5 = useStore.getState().web5;
     const myDid = useStore.getState().myDid;
-
+    const { fullName, profileId } = useStore.getState().profile;
+    console.log(fullName, "the fullname");
     let base64Image;
 
-    // getting the binary image file
-    const binaryImage = await data.spaceImage.arrayBuffer();
-    base64Image = btoa(
-      new Uint8Array(binaryImage).reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ""
-      )
-    );
+    // checking if the user selects an image
+    if (data.spaceImage.length !== 0) {
+      // getting the binary image file
+      const binaryImage = await data.spaceImage.arrayBuffer();
+      base64Image = btoa(
+        new Uint8Array(binaryImage).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      );
 
-    data["spaceImage"] = base64Image;
+      data["spaceImage"] = base64Image;
+    }
 
     // get current date and time
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
 
     // construct user profile
-    const userProfile = {
+    const spaceData = {
       ...data,
+      spaceAuthor: fullName,
+      spaceAuthorProfile: fullName.trim()[0],
+      spaceAuthorDid: profileId,
+      spaceFiles: [],
+      spaceSubscribers: 0,
       timestampWritten: `${currentDate} ${currentTime}`,
     };
 
+    // check the type of space the user wants to create
+    if (data.spacePrivacy === "private") {
+      console.log("creating public space....", spaceData);
+      handleCreatePrivateSpace(web5, myDid, spaceData);
+    } else {
+      console.log("creating public space....", spaceData);
+      handleCreatePublicSpace(web5, myDid, spaceData);
+    }
+  } catch (error) {
+    console.error("ERROR: ", error);
+  }
+};
+
+// read spaces created by the user
+export const getUserSpace = async () => {
+  console.log("Getting the user spaces");
+  try {
+    const web5 = useStore.getState().web5;
+    const myDid = useStore.getState().myDid;
+
+    // await both async functions concurrently
+    const [privateSpace, publicSpace] = await Promise.all([
+      handleReadPrivateSpace(web5, myDid),
+      handleReadUserPublicSpace(web5, myDid),
+    ]);
+
+    // Concatenate the spaces after both promises have resolved successfully
+    const mySpaces = privateSpace.concat(publicSpace);
+
+    // set the state
+    useStore.setState({ mySpaces });
+
+    // return statement
+    return {
+      success: true,
+      message: "Spaces has been successfully read",
+    };
+    // console.log("my spaces", mySpaces);
+  } catch (error) {
+    console.error("Something went wrong", error);
+    return {
+      success: false,
+      msg: "Something went  wrong",
+    };
+  }
+};
+
+// read all the public spaces created by all the users
+export const readUsersPublicSpace = async () => {};
+
+// create private space
+async function handleCreatePrivateSpace(web5, myDid, spaceData) {
+  try {
     const { record, status } = await web5.dwn.records.create({
-      data: userProfile,
+      data: spaceData,
       message: {
         protocol: PROTOCOL_URI,
-        protocolPath: "space",
-        schema: SPACE_SCHEMA,
+        protocolPath: "privateSpace",
+        schema: PRIVATE_SPACE_SCHEMA,
         dataFormat: "application/json",
       },
     });
 
     if (status.code === 202) {
-      console.log(userProfile, "userProfile");
-      console.log(record, "the returned record");
+      console.log(record, "successfully sent space to local DWN");
       const { status: remoteDwnStatus } = await record.send(myDid);
 
       if (remoteDwnStatus.code === 202) {
+        console.log(record, "successfully sent space to remote DWN");
         return {
           success: true,
-          message: "space created successfully",
+          msg: "space created successfully",
         };
       }
     }
@@ -705,59 +947,69 @@ export const createSpace = async (data) => {
     console.error(error, "error message");
     return {
       success: false,
-      message: "Something went wrong",
+      msg: "Something went wrong",
     };
   }
-};
+}
 
-// read space
-export const getUserSpace = async () => {
+// read private space
+async function handleReadPrivateSpace(web5, myDid) {
   try {
-    const web5 = useStore.getState().web5;
-    const myDid = useStore.getState().myDid;
-
     // getting the space records
     const { records } = await web5.dwn.records.query({
       from: myDid,
       message: {
         filter: {
-          schema: SPACE_SCHEMA,
+          schema: PRIVATE_SPACE_SCHEMA,
         },
       },
     });
 
-    // declare myspace
-    let mySpace = [];
+    // declare my private space
+    let privateSpaceRecords = [];
 
-    // mapping throught the mixed records
-    let spaceRecords = records.map(async (record) => {
-      let { record: space } = await web5.dwn.records.read({
-        message: {
-          filter: {
-            recordId: record.id,
-          },
-        },
-      });
+    await Promise.all(
+      records.map(async (record) => {
+        const data = await record.data.json();
 
-      // querying the record data in json
-      const spaces = await space.data.json();
+        console.log(data, "the data");
+        const privateSpaceData = { ...data, id: record.id };
+        privateSpaceRecords.push(privateSpaceData);
+      })
+    );
 
-      // if spaces, add to the array
-      if (spaces) {
-        mySpace.push(spaces);
-      }
-    });
+    // console.log(publicSpaceRecords, "the result");
+    return privateSpaceRecords;
+
+    // mapping through the mixed records
+    // let spaceRecords = records.map(async (record) => {
+    //   let { record: space } = await web5.dwn.records.read({
+    //     message: {
+    //       filter: {
+    //         recordId: record.id,
+    //       },
+    //     },
+    //   });
+
+    //   // querying the record data in json
+    //   const spaces = await space.data.json();
+
+    //   // if spaces, add to the array
+    //   if (spaces) {
+    //     myPrivateSpace.push(spaces);
+    //   }
+    // });
 
     // Wait for all promises to resolve
-    Promise.all(spaceRecords)
-      .then(() => {
-        // All asynchronous operations completed
-        console.log("All spaces fetched:", mySpace);
-        return mySpace;
-      })
-      .catch((error) => {
-        console.error("Error fetching spaces:", error);
-      });
+    // Promise.all(spaceRecords)
+    //   .then(() => {
+    //     // All asynchronous operations completed
+    //     console.log("All spaces fetched:", myPrivateSpace);
+    //     return myPrivateSpace;
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error fetching spaces:", error);
+    //   });
   } catch (error) {
     console.error("Something went wrong", error);
     return {
@@ -765,4 +1017,114 @@ export const getUserSpace = async () => {
       message: "Something went  wrong",
     };
   }
+}
+
+// create public space
+async function handleCreatePublicSpace(web5, myDid, spaceData) {
+  const { record, status } = await web5.dwn.records.create({
+    data: spaceData,
+    message: {
+      schema: PUBLIC_SPACE_SCHEMA,
+      dataFormat: "application/json",
+      published: true,
+    },
+  });
+
+  if (status.code === 202) {
+    console.log(record, "successfully sent public space to local DWN");
+    const { status: remoteDwnStatus } = await record.send(myDid);
+
+    if (remoteDwnStatus.code === 202) {
+      console.log(record, "successfully sent public space to remote DWN");
+      return {
+        success: true,
+        msg: "space created successfully",
+      };
+    }
+  }
+}
+
+// reading the public space of the main user
+async function handleReadUserPublicSpace(web5, myDid) {
+  console.log("reading the public space");
+  const { records } = await web5.dwn.records.query({
+    from: myDid,
+    message: {
+      filter: {
+        schema: PUBLIC_SPACE_SCHEMA,
+        dataFormat: "application/json",
+      },
+    },
+  });
+  console.log(records, "records");
+
+  let publicSpaceRecords = [];
+
+  // Read the record
+  try {
+    await Promise.all(
+      records.map(async (record) => {
+        const data = await record.data.json();
+
+        console.log(data, "the data");
+        const publicSpaceData = { ...data, id: record.id };
+        publicSpaceRecords.push(publicSpaceData);
+      })
+    );
+
+    // console.log(publicSpaceRecords, "the result");
+    return publicSpaceRecords;
+  } catch (error) {
+    console.log(error, "error");
+  }
+
+  // Promise.all(
+  //       blogpostrecords.map((element) => {
+  //         console.log('this is the element', element);
+  //         blogPostIds.push(element.id);
+
+  //         return element.data.json();
+  //       })
+  //     )
+}
+
+export const createPublicRecord = async () => {
+  const web5 = useStore.getState().web5;
+  const myDid = useStore.getState().myDid;
+  const { record } = await web5.dwn.records.create({
+    data: { name: "am the one" },
+    message: {
+      // schema: "https://myspace.app/public_space",
+      dataFormat: "application/json",
+      published: true,
+    },
+  });
+
+  console.log(record, record.id, "the record");
+  const sendRecord = await record.send(myDid);
+  console.log(sendRecord, "this is the record");
+};
+
+// bafyreihzy5mdumhv64gi6cdyo2iaymr634ktb6igxg24dcliplqh5u25dq;
+
+// bafyreibytrjshzbroyvyuvtrlnrrichhw6a4l4gokydkuzwuloljmkiawu;
+// bafyreic3qr6eumjrgsdqx7wnsci3v4upcgrbigi5dh2bokxrdmaljyvkam;
+// bafyreicjqy77ary7r46jfyhq7py43pae5sjncltglag6y3i7yvhz64cvx4;
+// bafyreidnq5a5xav5fhovhwu4o7xfhjdjnyxv7biuvhjuimkeoujvhvexfu;
+// bafyreigudrsatlfxv4cllxcpeqq3pmk7ze7qevytt6krvhro7tlfjhwqqe;
+// bafyreigjf3sfetqgxz4cns65auulmxw5bng7xogoxgnzlddlktslrsz3zu;
+export const deleteRecord = async () => {
+  const id = ["bafyreigiy3dpz56ab3atywln3sebm3ia24iogzsdjmshlmygcaffr3ji4y"];
+  const web5 = useStore.getState().web5;
+
+  id.forEach(async (i) => {
+    const response = await web5.dwn.records.delete({
+      // from: did,
+      message: {
+        recordId: i,
+      },
+    });
+
+    console.log(response);
+  });
 };
