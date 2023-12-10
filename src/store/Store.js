@@ -693,14 +693,14 @@ async function configureProtocol(web5, did) {
         console.log("protocol installed remotely");
         return {
           success: true,
-          msg: "DID, Profile and Protocol has been successfully created and connected to Web5",
+          data: "DID, Profile and Protocol has been successfully created and connected to Web5",
         };
       }
     } else {
       console.log("Protocol already installed");
       return {
         success: true,
-        msg: "Protocol, DID, already exist",
+        data: "Protocol, DID, already exist",
       };
     }
   } catch (error) {
