@@ -659,7 +659,8 @@ export const initWeb5 = async () => {
 
   if (web5 && did) {
     // configure protocol
-    await configureProtocol(web5, did);
+    const result = await configureProtocol(web5, did);
+    return result;
   }
 };
 
@@ -815,6 +816,7 @@ export const readProfile = async () => {
       // return profile record
       return {
         success: true,
+        profileRecord
       };
     }
   } catch (error) {
