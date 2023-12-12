@@ -8,9 +8,12 @@ import {
   deleteRecord,
   getUserSpace,
   initWeb5,
+  readExplorePublicSpace,
+  readOneRecord,
   readProfile,
   readPublicRecord,
   useStore,
+  writeDidsToDb,
 } from "@/store/Store";
 import { useEffect } from "react";
 
@@ -34,6 +37,9 @@ export default function Home() {
       <button onClick={readProfile}>get profile</button>
       <div onClick={createSpace}>create space</div>
       <div onClick={getUserSpace}>read space</div>
+      <div onClick={writeDidsToDb}>store did</div>
+      <div onClick={readExplorePublicSpace}>read all space</div>
+      <div onClick={readOneRecord}>read one space</div>
       <div>{profile.fullName}</div>
       <div>
         <h1 className="mb-5">

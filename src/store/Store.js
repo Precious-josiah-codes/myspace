@@ -1,4 +1,5 @@
 import { kv } from "@vercel/kv";
+import axios from "axios";
 import { create } from "zustand";
 
 let PROTOCOL_URI =
@@ -642,6 +643,7 @@ export const useStore = create((set) => ({
     },
   ],
   profile: {},
+  publicRecord: [],
 }));
 
 // create DID, Connect to web5
@@ -731,6 +733,23 @@ async function installProtocol(web5, protocolDefinition) {
     },
   });
 }
+
+// write did to redis
+export const writeDidsToDb = async () => {
+  const myDid = useStore.getState().myDid;
+  let lastSixDid = myDid.split("did:ion:")[1].substring(0, 6);
+
+  const did = {};
+  did[`${lastSixDid}`] = myDid;
+
+  const response = await axios({
+    method: "post",
+    url: "/api",
+    data: did,
+  });
+
+  console.log("Response data:", response);
+};
 
 // create profile
 export const createProfile = async (fullName) => {
@@ -916,7 +935,57 @@ export const getUserSpace = async () => {
 };
 
 // read all the public spaces created by all the users
-export const readUsersPublicSpace = async () => {};
+export const readExplorePublicSpace = async () => {
+  const web5 = useStore.getState().web5;
+
+  const response = await axios({
+    method: "get",
+    url: "/api",
+  });
+
+  const { data, status } = response.data;
+  const publicSpaceRecords = [];
+  let publicSpaceRecordsArr;
+
+  if (status === 1) {
+    const userDids = Object.values(data);
+    // userDids.pop();
+    console.log(userDids, "the dids");
+
+    // userDids.map(async (userDid) => {
+    const records = await web5.dwn.records.query({
+      from: "did:ion:EiD9ilM3ablJxtfjyo7zrvyGjWm4JlEtJE6T6l3qKQtABg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJkd24tc2lnIiwicHVibGljS2V5SndrIjp7ImNydiI6IkVkMjU1MTkiLCJrdHkiOiJPS1AiLCJ4Ijoic2oyempZRWYtWmdVWi1waTM3eXR3b183bFpnREFXUDVLeF84MFdMV2VZRSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifSx7ImlkIjoiZHduLWVuYyIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJzZWNwMjU2azEiLCJrdHkiOiJFQyIsIngiOiJyMF9rWDQtVWh0a3RxS2xFNWJlZlJadWw3SGp1dUFvR2hZNEUxMXBCN19zIiwieSI6IjJCRHhjdTFrUUxLVjZDMklfdzNrUHRCV1dpUWRvbzhQSUlkem1rYk9yX1kifSwicHVycG9zZXMiOlsia2V5QWdyZWVtZW50Il0sInR5cGUiOiJKc29uV2ViS2V5MjAyMCJ9XSwic2VydmljZXMiOlt7ImlkIjoiZHduIiwic2VydmljZUVuZHBvaW50Ijp7ImVuY3J5cHRpb25LZXlzIjpbIiNkd24tZW5jIl0sIm5vZGVzIjpbImh0dHBzOi8vZHduLnRiZGRldi5vcmcvZHduNiIsImh0dHBzOi8vZHduLnRiZGRldi5vcmcvZHduMyJdLCJzaWduaW5nS2V5cyI6WyIjZHduLXNpZyJdfSwidHlwZSI6IkRlY2VudHJhbGl6ZWRXZWJOb2RlIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlEaXlpdlNwc0d3dkV5MmNjUzg0bkhLUXlxeVkzUUM3NzlLQ0E3ME5wRmJjUSJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpRGpfcTA2ZjlXMzY2ODB5enQ5eHQwakxRZldQOFJKNVRfVmtjVTJNMTJGUUEiLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUNuRjhLSFhnS0o2SGZCcnVpR3l2ckdtTkg1MXlDbEpQWFdQcXZ5ZGdNUFdnIn19",
+      message: {
+        filter: {
+          schema: PUBLIC_SPACE_SCHEMA,
+          dataFormat: "application/json",
+        },
+      },
+
+      // });
+
+      // await Promise.all(
+      //   records.map(async (record) => {
+      //     const data = await record.data;
+
+      //     console.log(data, "the data");
+      //     // const publicSpaceData = { ...data, id: record.id };
+      //     // publicSpaceRecords.push(publicSpaceData);
+      //   })
+      // );
+    });
+
+    console.log("Response data:", await records);
+    records.records.map(async (record) => {
+      // const data = await record.data.json();
+
+      console.log(record.id, "the data");
+      // const publicSpaceData = { ...data, id: record.id };
+      // publicSpaceRecords.push(publicSpaceData);
+    });
+    // console.log("Response data:", await records.records.data.json());
+  }
+};
 
 // create private space
 async function handleCreatePrivateSpace(web5, myDid, spaceData) {
@@ -1077,15 +1146,6 @@ async function handleReadUserPublicSpace(web5, myDid) {
   } catch (error) {
     console.log(error, "error");
   }
-
-  // Promise.all(
-  //       blogpostrecords.map((element) => {
-  //         console.log('this is the element', element);
-  //         blogPostIds.push(element.id);
-
-  //         return element.data.json();
-  //       })
-  //     )
 }
 
 export const createPublicRecord = async () => {
@@ -1103,6 +1163,64 @@ export const createPublicRecord = async () => {
   console.log(record, record.id, "the record");
   const sendRecord = await record.send(myDid);
   console.log(sendRecord, "this is the record");
+};
+
+export const readOneRecord = async () => {
+  const web5 = useStore.getState().web5;
+
+  const response = await axios({
+    method: "get",
+    url: "/api",
+  });
+
+  const { data, status } = response.data;
+
+  let publiceSpaceRecord = [];
+
+  if (status === 1) {
+    const userDids = Object.values(data);
+    userDids.map(async (userDid) => {
+      let { records } = await web5.dwn.records.query({
+        from: userDid,
+        message: {
+          filter: {
+            schema: PUBLIC_SPACE_SCHEMA,
+            dataFormat: "application/json",
+          },
+        },
+      });
+
+      console.log(await records);
+      records.map(async (record) => {
+        // const data = await record.data.json();
+        const data = await record.id;
+        console.log(data);
+        // bafyreifxdra4c24iylgwd6eswtkk6i37jl4trfpvospdl2gc4yveajugja;
+        //
+
+        let { record: rc } = await web5.dwn.records.read({
+          from: userDid,
+          message: {
+            filter: {
+              recordId: data,
+            },
+          },
+        });
+
+        // assuming the record has a text payload
+        const text = await rc?.data?.json();
+        console.log(text, "the text");
+
+        // publiceSpaceRecord.push(data);
+        // console.log(publiceSpaceRecord, "the data");
+        // const publicSpaceData = { ...data, id: record.id };
+        // publicSpaceRecords.push(publicSpaceData);
+      });
+    });
+  }
+
+  console.log(publiceSpaceRecord, "the record");
+  // const { status } = await records.update([{ data: "Hello, I'm updated!" }]);
 };
 
 // bafyreihzy5mdumhv64gi6cdyo2iaymr634ktb6igxg24dcliplqh5u25dq;
