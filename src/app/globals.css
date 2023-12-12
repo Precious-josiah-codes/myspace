@@ -36,3 +36,6 @@ body {
 .sidebar::-webkit-scrollbar-thumb:hover {
   background:  #18BEBE;
 }
+.spinner{
+  width: 20%;
+}

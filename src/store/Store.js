@@ -751,7 +751,7 @@ export const createProfile = async (fullName) => {
       profileId: myDid,
       timestampWritten: `${currentDate} ${currentTime}`,
     };
-
+    console.log(userProfile)
     // writing the profile recod locally
     const { record, status } = await web5.dwn.records.create({
       data: userProfile,

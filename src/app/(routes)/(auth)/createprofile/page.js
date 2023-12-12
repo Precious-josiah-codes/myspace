@@ -7,6 +7,10 @@ import { useState } from "react";
 import { createProfile } from "@/store/Store";
 import LottieAnimation from "@/components/lotties";
 import Loader from "@/Assets/loading.json"
+import { useState } from "react";
+import { createProfile } from "@/store/Store";
+import LottieAnimation from "@/components/lotties";
+import Loader from "@/Assets/loading.json"
 
 const CreateProfile = () => {
   const [name, setName] = useState('');
