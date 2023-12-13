@@ -23,6 +23,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "crypto-browserify": "^3.12.0",
+    "lottie-react": "^2.4.0",
     "lucide-react": "^0.294.0",
     "next": "14.0.3",
     "process": "^0.11.10",

@@ -59,7 +59,7 @@ const Space = () => {
         <div className="relative">
           <div className="w-full h-[300px] rounded-lg overflow-hidden">
             <Image
-              src={spaceImage}
+              src={`data:image/png;base64,${spaceImage}`}
               quality={100}
               fill
               sizes="100vw"

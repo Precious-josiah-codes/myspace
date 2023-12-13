@@ -3,13 +3,51 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createProfile } from "@/store/Store";
 
 const CreateProfile = () => {
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [message, setmessage] = useState({});
   const router = useRouter();
-  function handleProfileCreation() {
-    localStorage.setItem("profile", "team pere");
-    router.push("/");
-  }
+
+  const handleProfileCreation = async (e) => {
+    e.preventDefault();
+    try {
+      const success = await createProfile(name);
+      console.log(success);
+      setmessage(success);
+      setLoading(true);
+      if (success.success) {
+        setLoading(false);
+        setError(false);
+        localStorage.setItem("profile", name);
+        // Profile creation was successful
+        console.log("Profile created successfully");
+        // Redirect or perform any other actions here
+        router.push("/");
+      } else {
+        setLoading(false);
+        setError(true);
+        // Profile creation failed
+        console.log("Profile creation failed");
+        // Handle the failure case if needed
+      }
+    } catch (error) {
+      setLoading(false);
+      // An error occurred while creating the profile
+      console.error("Error creating profile:", error);
+      // Handle the error case if needed
+    }
+  };
+
+  const handleName = (e) => {
+    const value = e.target.value;
+    setName(value);
+  };
+
   return (
     <section className="overflow-hidden h-screen relative">
       {/* shape */}
@@ -26,19 +64,29 @@ const CreateProfile = () => {
           <h1 className="text-zinc-600 text-base font-normal font-['calibri']">
             to create your account
           </h1>
-
-          <div className="mt-[3rem]">
-            <Input
-              className="w-[494px] rounded-none"
-              placeholder="Enter full name here..."
-            />
-            <Button
-              className="w-[494px] mt-[1.5rem] bg-teal-500 text-white rounded-none"
-              onClick={handleProfileCreation}
-            >
-              Create Profile
-            </Button>
-          </div>
+          <form onSubmit={handleProfileCreation}>
+            <div className="mt-[3rem]">
+              <Input
+                className="w-[494px] rounded-none"
+                placeholder="Enter full name here..."
+                onChange={(e) => handleName(e)}
+              />
+              <p className="text-red-700 mt-2 text-sm">{message.data}</p>
+              <Button
+                className={`w-[494px] mt-[1.5rem] bg-teal-500 text-white rounded-none ${
+                  loading || name.length === 0
+                    ? "pointer-events-none"
+                    : "pointer-events-auto"
+                }`}
+              >
+                {loading ? (
+                  <div className="loader ease-linear rounded-full border-[0.1rem] border-t-[0.1rem] border-gray-200 h-[1.4rem] w-[1.4rem]" />
+                ) : (
+                  "Create Profile"
+                )}
+              </Button>
+            </div>
+          </form>
         </div>
       </section>
     </section>

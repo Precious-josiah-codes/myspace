@@ -10,70 +10,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { grantSpaceRequest, useStore } from "@/store/Store";
 
+// TODO: ADD THE NAME OF THE PERSON REQUESTING THE SPACE ACCESS
 const Navbar = () => {
-  const notifications = [
-    {
-      id: 1,
-      profile: "A",
-      message: "James is requesting access to Movies night",
-      notificationType: "access request",
-    },
-    {
-      id: 2,
-      profile: "L",
-      message: "Lily rejected access to your Movies Night",
-      notificationType: "deny request",
-    },
-    {
-      id: 3,
-      profile: "N",
-      message: "Ngozika just subscribed to Beats",
-      notificationType: "subscribed",
-    },
-    {
-      id: 4,
-      profile: "J",
-      message: "James  is requesting access to Movies Night",
-      notificationType: "access request",
-    },
-    {
-      id: 5,
-      profile: "K",
-      message: "Ken  is requesting access to Sports Cafe",
-      notificationType: "access request",
-    },
-    {
-      id: 6,
-      profile: "O",
-      message: "Obed is requesting access to Travels Explore",
-      notificationType: "access request",
-    },
-    {
-      id: 7,
-      profile: "G",
-      message: "Golden just subscribed to Lilys Adventure",
-      notificationType: "subscribed",
-    },
-    {
-      id: 8,
-      profile: "N",
-      message: "Ngozika just subscribed to Lilys Adventure",
-      notificationType: "subscribed",
-    },
-    {
-      id: 9,
-      profile: "M",
-      message: "McDonald just subscribed to your space",
-      notificationType: "subscribed",
-    },
-    {
-      id: 10,
-      profile: "B",
-      message: "Benedict is requesting access to Travels Explore",
-      notificationType: "access request",
-    },
-  ];
+  const [notifications] = useStore((state) => [state.notifications]);
+
   return (
     <section className="h-[5rem] sm:px-6 px-3 flex justify-between items-center text-black w-full sticky top-0 z-50 bg-white border-b border-[#5b58662d]">
       {/* search input */}
@@ -148,7 +90,13 @@ const Navbar = () => {
         </div>
 
         {/* notification icon */}
-        <div className="w-[2.7rem] h-[2.7rem] inline-flex items-center justify-center p-1 rounded-full relative">
+        <div
+          className={`w-[2rem] h-[2rem]  inline-flex items-center justify-center p-1 rounded-full relative ${
+            notifications.length === 0
+              ? "pointer-events-none"
+              : "pointer-events-auto"
+          }`}
+        >
           <Dialog className="w-[40rem]">
             <DialogTrigger>
               <svg
@@ -179,17 +127,27 @@ const Navbar = () => {
                         key={index}
                       >
                         <div className="h-[2.7rem] w-[2.7rem] rounded-full overflow-hidden relative bg-black text-white inline-flex justify-center items-center">
-                          <div>{notification.profile}</div>
+                          <div>P</div>
                         </div>
                         <p className="text-base   flex-1 pl-3">
                           {notification.message}
                         </p>
-                        {notification.notificationType === "access request" && (
+                        {notification.notificationType === "requesting" && (
                           <div className="flex space-x-3">
-                            <button className="py-2 px-3 bg-teal-500 text-white rounded-lg text-base">
+                            <button
+                              className="py-2 px-3 bg-teal-500 text-white rounded-lg text-base"
+                              onClick={() =>
+                                grantSpaceRequest(notification, "accepted")
+                              }
+                            >
                               Accept
                             </button>
-                            <button className="py-2 px-3 border border-black rounded-lg text-base">
+                            <button
+                              className="py-2 px-3 border border-black rounded-lg text-base"
+                              onClick={() =>
+                                grantSpaceRequest(notification, "denied")
+                              }
+                            >
                               Decline
                             </button>
                           </div>
@@ -201,6 +159,9 @@ const Navbar = () => {
               </DialogHeader>
             </DialogContent>
           </Dialog>
+          {notifications.length !== 0 && (
+            <div className="bg-green-700 h-2 w-2 rounded-full  absolute top-0 -right-[0.10rem]" />
+          )}
         </div>
 
         {/* profile */}

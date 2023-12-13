@@ -19,28 +19,36 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { createSpace, useStore } from "@/store/Store";
+import {
+  createSpace,
+  getUserSpace,
+  initWeb5,
+  readLocalUserProfile,
+  useStore,
+} from "@/store/Store";
 import { DollarSignIcon, MessageSquarePlusIcon } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Spaces = () => {
-  const [$mySpaces] = useStore((state) => [state.mySpaces]);
+  const [$mySpaces, did] = useStore((state) => [state.mySpaces, state.myDid]);
+  const [createSpaceLoader, setCreateSpaceLoader] = useState(false);
+  const [createSpaceSuccessMsg, setCreateSpaceSuccessMsg] = useState("");
 
   // grouping spaces
   const { privateSpace, publicSpace, sharedSpace } = {
-    privateSpace: $mySpaces.filter(
-      (mySpace) => mySpace.spacePrivacy === "private"
+    privateSpace: $mySpaces?.filter(
+      (mySpace) => mySpace?.spacePrivacy === "private"
     ),
-    publicSpace: $mySpaces.filter(
-      (mySpace) => mySpace.spacePrivacy === "private"
+    publicSpace: $mySpaces?.filter(
+      (mySpace) => mySpace?.spacePrivacy === "public"
     ),
-    sharedSpace: $mySpaces.filter(
-      (mySpace) => mySpace.spacePrivacy === "private"
+    sharedSpace: $mySpaces?.filter(
+      (mySpace) => mySpace?.spacePrivacy === "shared"
     ),
   };
 
-  // console.log(privateSpace, publicSpace, sharedSpace);
+  console.log(privateSpace, publicSpace, sharedSpace);
   const [toggleSpaceFileCreation, setToggleSpaceFileCreation] = useState(false);
 
   // space data
@@ -79,10 +87,12 @@ const Spaces = () => {
   }
 
   //   handle space creation
-  function handleSpaceCreation() {
+  async function handleSpaceCreation() {
     // reset error message on function call
     setSpaceNameError("");
     setSpacePriceError("");
+    setCreateSpaceLoader(true);
+    setCreateSpaceSuccessMsg("");
 
     // validate the form submission
     if (spaceName.trim().length === 0) {
@@ -106,7 +116,7 @@ const Spaces = () => {
         "hello"
       );
 
-      createSpace({
+      const response = await createSpace({
         spaceName,
         spaceDescription,
         spacePrivacy,
@@ -115,14 +125,42 @@ const Spaces = () => {
         spaceTags,
         spaceImage,
       });
+
+      if (response.success) {
+        setCreateSpaceLoader(false);
+        setCreateSpaceSuccessMsg(
+          "Your space has been successfully created, reload page to see space"
+        );
+      }
+      console.log("this is the response", response);
     }
   }
 
-  //   handle adding file to space
+  // handle adding file to space
   function handleCreateSpaceFile() {
     console.log({ fileSpace, fileUpload });
   }
 
+  useEffect(() => {
+    async function handleWeb5() {
+      if (!did) {
+        const { success } = await initWeb5();
+        if (success) {
+          const [userSpace] = await Promise.all([getUserSpace()]);
+          console.log(userSpace, "public space");
+        }
+      } else {
+        const [userSpace] = await Promise.all([getUserSpace()]);
+        console.log(userSpace, "public space");
+      }
+    }
+
+    // TODO: check if the profile works when page is reloaded
+    readLocalUserProfile();
+    handleWeb5();
+  }, []);
+
+  // TODO: WRITE THE FILE TYPE WHILE CREATING A SPACE AS WELL
   return (
     <section className="relative">
       <main className="">
@@ -143,35 +181,55 @@ const Spaces = () => {
 
           {/* private space */}
           <TabsContent value="privateSpace">
-            <section className="grid grid-cols-3 gap-6">
-              {privateSpace.map((space, index) => (
-                <div key={index}>
-                  <SpaceCard path="myspace" space={space} />
-                </div>
-              ))}
-            </section>
+            <div>
+              {privateSpace?.length > 0 ? (
+                <section className="grid grid-cols-3 gap-6">
+                  {privateSpace?.map((space, index) => (
+                    <div key={index}>
+                      <SpaceCard path="myspace" space={space} />
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                <h1 className="text-center">You have no private space</h1>
+              )}
+            </div>
           </TabsContent>
 
           {/* public space */}
           <TabsContent value="publicSpace">
-            <section className="grid grid-cols-3 gap-6">
-              {publicSpace.map((space, index) => (
-                <div key={index}>
-                  <SpaceCard path="myspace" space={space} />
-                </div>
-              ))}
-            </section>
+            <div>
+              {publicSpace?.length > 0 ? (
+                <section className="grid grid-cols-3 gap-6">
+                  {publicSpace?.map((space, index) => (
+                    <div key={index}>
+                      <SpaceCard path="myspace" space={space} />
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                <h1 className="text-center">You have no public space</h1>
+              )}
+            </div>
           </TabsContent>
 
           {/* shared space */}
           <TabsContent value="sharedSpace">
-            <section className="grid grid-cols-3 gap-6">
-              {sharedSpace.map((space, index) => (
-                <div key={index}>
-                  <SpaceCard path="myspace" space={space} />
-                </div>
-              ))}
-            </section>
+            <div>
+              {sharedSpace?.length > 0 ? (
+                <section className="grid grid-cols-3 gap-6">
+                  {sharedSpace?.map((space, index) => (
+                    <div key={index}>
+                      <SpaceCard path="myspace" space={space} />
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                <h1 className="text-center">
+                  No space has been shared with you
+                </h1>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </main>
@@ -320,6 +378,11 @@ const Spaces = () => {
                 </div>
               </div>
 
+              {createSpaceSuccessMsg.length > 0 && (
+                <div className="text-green-700 text-center">
+                  {createSpaceSuccessMsg}
+                </div>
+              )}
               {/* create space submit button */}
               <DialogFooter>
                 <Button
@@ -327,7 +390,11 @@ const Spaces = () => {
                   className="w-full color1"
                   onClick={handleSpaceCreation}
                 >
-                  Create Space
+                  {createSpaceLoader ? (
+                    <div className="loader ease-linear rounded-full border-[0.1rem] border-t-[0.1rem] border-gray-200 h-[1.4rem] w-[1.4rem]" />
+                  ) : (
+                    "Create Space"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -443,6 +510,12 @@ const Spaces = () => {
       </div>
 
       {/* end create devices modal */}
+
+      {!$mySpaces && (
+        <div className="fixed top-0 left-0 z-[100] w-full h-screen bg-black text-white flex justify-center items-center">
+          <h1 className="animate-pulse">Loading Spaces....</h1>
+        </div>
+      )}
     </section>
   );
 };
