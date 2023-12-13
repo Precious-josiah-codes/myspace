@@ -1,3 +1,5 @@
+import { kv } from "@vercel/kv";
+import axios from "axios";
 import { create } from "zustand";
 
 let PROTOCOL_URI =
@@ -8,21 +10,149 @@ let PROFILE_SCHEMA =
   process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
     ? "https://myspace.app/profile"
     : "https://prod/myspace.app/profile";
-let PROFILE_PHOTO_SCHEMA =
-  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
-    ? "https://myspace.app/profile/profile_photo"
-    : "https://prod/myspace.app/profile/profile_photo";
 
-let SPACE_SCHEMA =
+let READ_PROFILE_SCHEMA =
   process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
-    ? "https://myspace.app/space"
-    : "https://prod/myspace.app/space";
+    ? "https://myspace.app/profile/readProfile"
+    : "https://prod/myspace.app/profile/readProfile";
+
+let PRIVATE_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/privateSpace"
+    : "https://prod/myspace.app/privateSpace";
+
 let PUBLIC_SPACE_SCHEMA =
   process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
-    ? "https://myspace.app/public_space"
-    : "https://prod/myspace.app/public_space";
+    ? "https://myspace.app/publicSpace"
+    : "https://prod/myspace.app/publicSpace";
+
+let SHARED_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/sharedSpace"
+    : "https://prod/myspace.app/sharedSpace";
+
+let READ_PRIVATE_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/readPrivateSpace"
+    : "https://prod/myspace.app/readPrivateSpace";
+
+let DELETE_UPDATE_PRIVATE_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/deleteUpdatePrivateSpace"
+    : "https://prod/myspace.app/deleteUpdatePrivateSpace";
+
+let READ_PUBLIC_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/readPublicSpace"
+    : "https://prod/myspace.app/readPublicSpace";
+
+let DELETE_UPDATE_PUBLIC_SPACE_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/deleteUpdatePublicSpace"
+    : "https://prod/myspace.app/deleteUpdatePublicSpace";
+
+let NOTIFICATION_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/notification"
+    : "https://prod/myspace.app/notification";
+
+let DID_SCHEMA =
+  process.env.NEXT_PUBLIC_MYAPP_ENV === "dev"
+    ? "https://myspace.app/did"
+    : "https://prod/myspace.app/did";
 
 // protocol definition
+// TODO: FIX THE BUTTON LOADER ON THE ACCOUNT CREATION. ITS NOT DISPLAYING
+
+const protoxcolDefinition = {
+  protocol: "https://social-media.xyz",
+  published: true,
+  types: {
+    post: {
+      schema: "https://social-media.xyz/schemas/postSchema",
+      dataFormats: ["text/plain"],
+    },
+    reply: {
+      schema: "https://social-media.xyz/schemas/replySchema",
+      dataFormats: ["text/plain"],
+    },
+    image: {
+      dataFormats: ["image/jpeg"],
+    },
+    caption: {
+      schema: "https://social-media.xyz/schemas/captionSchema",
+      dataFormats: ["text/plain"],
+    },
+  },
+  structure: {
+    post: {
+      $actions: [
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+      reply: {
+        $actions: [
+          {
+            who: "recipient",
+            of: "post",
+            can: "write",
+          },
+          {
+            who: "author",
+            of: "post",
+            can: "write",
+          },
+        ],
+      },
+    },
+    image: {
+      $actions: [
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+      caption: {
+        $actions: [
+          {
+            who: "anyone",
+            can: "read",
+          },
+          {
+            who: "author",
+            of: "image",
+            can: "write",
+          },
+        ],
+      },
+      reply: {
+        $actions: [
+          {
+            who: "author",
+            of: "image",
+            can: "read",
+          },
+          {
+            who: "recipient",
+            of: "image",
+            can: "write",
+          },
+        ],
+      },
+    },
+  },
+};
+
 let protocolDefinition = {
   protocol: PROTOCOL_URI,
   published: true,
@@ -31,36 +161,96 @@ let protocolDefinition = {
       schema: PROFILE_SCHEMA,
       dataFormats: ["application/json"],
     },
-    space: {
-      schema: SPACE_SCHEMA,
+    privateSpace: {
+      schema: PRIVATE_SPACE_SCHEMA,
       dataFormats: ["application/json"],
     },
     publicSpace: {
       schema: PUBLIC_SPACE_SCHEMA,
       dataFormats: ["application/json"],
     },
-    image: {
-      schema: PROFILE_PHOTO_SCHEMA,
-      dataFormats: ["image/png", "image/jpeg"],
+    sharedSpace: {
+      schema: SHARED_SPACE_SCHEMA,
+      dataFormats: ["application/json"],
+    },
+    did: {
+      schema: DID_SCHEMA,
+      dataFormats: ["application/json"],
+    },
+    notification: {
+      schema: NOTIFICATION_SCHEMA,
+      dataFormats: ["application/json"],
     },
   },
   structure: {
     profile: {
       $actions: [
         { who: "anyone", can: "write" },
-        { who: "anyone", can: "read" },
-      ],
-    },
-    space: {
-      $actions: [
-        { who: "anyone", can: "write" },
-        { who: "anyone", can: "read" },
+        { who: "author", of: "profile", can: "read" },
       ],
     },
     publicSpace: {
       $actions: [
-        { who: "anyone", can: "write" },
-        { who: "anyone", can: "read" },
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+    },
+    notification: {
+      $actions: [
+        {
+          who: "recipient",
+          of: "notification",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+    },
+    privateSpace: {
+      $actions: [
+        {
+          who: "author",
+          of: "privateSpace",
+          can: "read",
+        },
+        {
+          who: "author",
+          of: "privateSpace",
+          can: "write",
+        },
+      ],
+    },
+    sharedSpace: {
+      $actions: [
+        {
+          who: "recipient",
+          of: "sharedSpace",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
+      ],
+    },
+    did: {
+      $actions: [
+        {
+          who: "anyone",
+          can: "read",
+        },
+        {
+          who: "anyone",
+          can: "write",
+        },
       ],
     },
   },
@@ -69,441 +259,18 @@ let protocolDefinition = {
 export const useStore = create((set) => ({
   web5: null,
   myDid: null,
-  spaces: [
-    {
-      id: "1",
-      spaceName: "Dreamy Music Space",
-      spaceAuthor: "David",
-      spaceAuthorProfile: "D",
-      spaceDescription: "A space for music enthusiasts",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$150",
-      spaceTags: "music, instruments, melody",
-      spaceImage:
-        "https://images.pexels.com/photos/33597/guitar-classical-guitar-acoustic-guitar-electric-guitar.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/9517380/pexels-photo-9517380.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Lovely day music video",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/6532373/pexels-photo-6532373.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Champion",
-        },
-        {
-          id: 3,
-          fileThumbNail:
-            "https://images.pexels.com/photos/934067/pexels-photo-934067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "document",
-          fileName: "Music Proposal",
-        },
-        {
-          id: 4,
-          fileThumbNail:
-            "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "audio",
-          fileName: "Relaxing Music",
-        },
-        {
-          id: 5,
-          fileThumbNail:
-            "https://images.pexels.com/photos/1267350/pexels-photo-1267350.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "image",
-          fileName: "Let's Party",
-        },
-        {
-          id: 6,
-          fileThumbNail:
-            "https://images.pexels.com/photos/5935232/pexels-photo-5935232.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Cityscape Timelapse",
-        },
-      ],
-      spaceSubscribers: 15,
-    },
-    {
-      id: "2",
-      spaceName: "Gaming Universe",
-      spaceAuthor: "Gina",
-      spaceAuthorProfile: "G",
-      spaceDescription: "Discuss and share your gaming experiences",
-      spacePrivacy: "public",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "gaming, video games, esports",
-      spaceImage:
-        "https://images.pexels.com/photos/275033/pexels-photo-275033.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/260024/pexels-photo-260024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Win in 3 moves",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Super Mario",
-        },
-
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "document",
-          fileName: "Football Cheat Sheet",
-        },
-        {
-          id: 3,
-          fileThumbNail:
-            "https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Super Mario",
-        },
-      ],
-      spaceSubscribers: 12,
-    },
-    {
-      id: "3",
-      spaceName: "Tech Talk Forum",
-      spaceAuthor: "Tom",
-      spaceAuthorProfile: "T",
-      spaceDescription: "Explore the latest in technology",
-      spacePrivacy: "private",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "technology, gadgets, innovation",
-      spaceImage:
-        "https://images.pexels.com/photos/3183183/pexels-photo-3183183.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/6953827/pexels-photo-6953827.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Talk with Alma CEO",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/8349343/pexels-photo-8349343.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "image",
-          fileName: "Short Interview with me",
-        },
-      ],
-      spaceSubscribers: 0,
-    },
-    {
-      id: "4",
-      spaceName: "Healthy Living Hub",
-      spaceAuthor: "Hannah",
-      spaceAuthorProfile: "H",
-      spaceDescription: "Share tips for a healthy lifestyle",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$100",
-      spaceTags: "health, wellness, fitness",
-      spaceImage:
-        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 8,
-    },
-    {
-      id: "5",
-      spaceName: "Travel Diaries",
-      spaceAuthor: "Tyler",
-      spaceAuthorProfile: "T",
-      spaceDescription: "Explore the world through travel stories",
-      spacePrivacy: "private",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "travel, adventure, exploration",
-      spaceImage:
-        "https://images.pexels.com/photos/287240/pexels-photo-287240.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 0,
-    },
-    {
-      id: "6",
-      spaceName: "Cooking Corner",
-      spaceAuthor: "Catherine",
-      spaceAuthorProfile: "C",
-      spaceDescription: "Share and discover delicious recipes",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$180",
-      spaceTags: "cooking, recipes, food",
-      spaceImage:
-        "https://images.pexels.com/photos/691114/pexels-photo-691114.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/2890387/pexels-photo-2890387.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Cook with me",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/691114/pexels-photo-691114.jpeg?auto=compress&cs=tinysrgb&w=600",
-          fileType: "document",
-          fileName: "My Secret CookBook",
-        },
-      ],
-      spaceSubscribers: 18,
-    },
-    {
-      id: "7",
-      spaceName: "Fitness Fanatics",
-      spaceAuthor: "Frank",
-      spaceAuthorProfile: "F",
-      spaceDescription: "Connect with fellow fitness enthusiasts",
-      spacePrivacy: "public",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "fitness, workout, exercise",
-      spaceImage: "https://images.pexels.com/photos/28080/pexels-photo.jpg",
-      spaceFiles: [],
-      spaceSubscribers: 25,
-    },
-    {
-      id: "8",
-      spaceName: "Artistic Expression",
-      spaceAuthor: "Alice",
-      spaceAuthorProfile: "A",
-      spaceDescription: "Celebrate creativity in all forms",
-      spacePrivacy: "private",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "art, creativity, design",
-      spaceImage:
-        "https://images.pexels.com/photos/6941452/pexels-photo-6941452.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/102127/pexels-photo-102127.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "My first art",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/19200200/pexels-photo-19200200/free-photo-of-abstract-photo-of-a-melt-red-paint.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Digital Painting",
-        },
-      ],
-      spaceSubscribers: 0,
-    },
-    {
-      id: "9",
-      spaceName: "Photography Passion",
-      spaceAuthor: "Peter",
-      spaceAuthorProfile: "P",
-      spaceDescription: "Showcase and discuss photography",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$250",
-      spaceTags: "photography, camera, photos",
-      spaceImage:
-        "https://images.pexels.com/photos/2179205/pexels-photo-2179205.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 14,
-    },
-    {
-      id: "10",
-      spaceName: "Science Explorers",
-      spaceAuthor: "Samantha",
-      spaceAuthorProfile: "S",
-      spaceDescription: "Dive into the wonders of science",
-      spacePrivacy: "private",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "science, discovery, knowledge",
-      spaceImage:
-        "https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 0,
-    },
-  ],
-  mySpaces: [
-    {
-      id: "1",
-      spaceName: "Tech Talks",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Discuss the latest in technology with Lily",
-      spacePrivacy: "private",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "technology, gadgets, innovation",
-      spaceImage:
-        "https://images.pexels.com/photos/1181268/pexels-photo-1181268.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/6953827/pexels-photo-6953827.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Talk with Alma CEO",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/8349343/pexels-photo-8349343.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "image",
-          fileName: "Short Interview with me",
-        },
-        {
-          id: 3,
-          fileThumbNail:
-            "https://images.pexels.com/photos/6954162/pexels-photo-6954162.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "audio",
-          fileName: "Catch me on air",
-        },
-      ],
-      spaceSubscribers: 18,
-    },
-    {
-      id: "2",
-      spaceName: "Lily's Travel Adventures",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Share and explore exciting travel stories",
-      spacePrivacy: "public",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "travel, adventure, exploration",
-      spaceImage:
-        "https://images.pexels.com/photos/12660667/pexels-photo-12660667.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [
-        {
-          id: 1,
-          fileThumbNail:
-            "https://images.pexels.com/photos/844167/pexels-photo-844167.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "video",
-          fileName: "Road trip to Australia",
-        },
-        {
-          id: 2,
-          fileThumbNail:
-            "https://images.pexels.com/photos/6141092/pexels-photo-6141092.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          fileType: "image",
-          fileName: "Photos with the boys #Australia",
-        },
-      ],
-      spaceSubscribers: 20,
-    },
-    {
-      id: "3",
-      spaceName: "Lily's Creative Corner",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Express your creativity in Lily's artistic space",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$150",
-      spaceTags: "art, design, creativity",
-      spaceImage:
-        "https://images.pexels.com/photos/256514/pexels-photo-256514.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 15,
-    },
-    {
-      id: "4",
-      spaceName: "Lily's Fitness Zone",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Join Lily in staying fit and healthy",
-      spacePrivacy: "private",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "fitness, workout, exercise",
-      spaceImage:
-        "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 25,
-    },
-    {
-      id: "5",
-      spaceName: "Lily's Culinary Delights",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Explore the world of delicious recipes with Lily",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$220",
-      spaceTags: "cooking, recipes, food",
-      spaceImage:
-        "https://images.pexels.com/photos/248444/pexels-photo-248444.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 22,
-    },
-    {
-      id: "6",
-      spaceName: "Photography Passion",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Capture beautiful moments in Lily's photography space",
-      spacePrivacy: "public",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "photography, camera, photos",
-      spaceImage:
-        "https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 14,
-    },
-    {
-      id: "7",
-      spaceName: "Science Hub",
-      spaceAuthor: "Lily",
-      spaceAuthorProfile: "L",
-      spaceDescription: "Explore the wonders of science with Lily",
-      spacePrivacy: "public",
-      spaceMonetization: "yes",
-      spacePrice: "$180",
-      spaceTags: "science, discovery, knowledge",
-      spaceImage:
-        "https://images.pexels.com/photos/356040/pexels-photo-356040.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 20,
-    },
-    {
-      id: "8",
-      spaceName: "Nasa Space Camp",
-      spaceAuthor: "Nasa",
-      spaceAuthorProfile: "N",
-      spaceDescription: "Discussing space invations",
-      spacePrivacy: "shared",
-      spaceMonetization: "no",
-      spacePrice: null,
-      spaceTags: "space, planet, space tech",
-      spaceImage:
-        "https://images.pexels.com/photos/8474959/pexels-photo-8474959.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      spaceFiles: [],
-      spaceSubscribers: 40,
-    },
-  ],
+  spaces: null,
+  mySpaces: null,
+  profile: "",
+  notifications: [],
+  publicRecord: [],
 }));
 
 // create DID, Connect to web5
 export const initWeb5 = async () => {
   console.log("Initializing web 5");
   const { Web5 } = await import("@web5/api/browser");
-  const { web5, did } = await Web5.connect();
+  const { web5, did } = await Web5.connect({ sync: "1s" });
 
   // setting the web5 and did state
   useStore.setState({ web5: web5 });
@@ -514,7 +281,8 @@ export const initWeb5 = async () => {
 
   if (web5 && did) {
     // configure protocol
-    await configureProtocol(web5, did);
+    const response = await configureProtocol(web5, did);
+    return response;
   }
 };
 
@@ -544,10 +312,19 @@ async function configureProtocol(web5, did) {
       );
 
       console.log(remoteProtocolStatus, "remoteprotocol status");
-      if (remoteProtocolStatus.code === 202)
+      if (remoteProtocolStatus.code === 202) {
         console.log("protocol installed remotely");
+        return {
+          success: true,
+          data: "DID, Profile and Protocol has been successfully created and connected to Web5",
+        };
+      }
     } else {
       console.log("Protocol already installed");
+      return {
+        success: true,
+        data: "Protocol, DID, already exist",
+      };
     }
   } catch (error) {
     console.error(error, "error");
@@ -557,13 +334,15 @@ async function configureProtocol(web5, did) {
 // querying local protocol
 async function queryProtocol(web5) {
   console.log("Querying protocol");
-  return await web5.dwn.protocols.query({
+  const protocol = await web5.dwn.protocols.query({
     message: {
       filter: {
         protocol: PROTOCOL_URI,
       },
     },
   });
+  console.log(protocol, "the protocol");
+  return protocol;
 }
 
 // install protocol
@@ -576,9 +355,26 @@ async function installProtocol(web5, protocolDefinition) {
   });
 }
 
+// write did to redis
+export const writeDidsToDb = async () => {
+  const myDid = useStore.getState().myDid;
+  let lastSixDid = myDid.split("did:ion:")[1].substring(0, 6);
+
+  const did = {};
+  did[`${lastSixDid}`] = myDid;
+
+  const response = await axios({
+    method: "post",
+    url: "/api",
+    data: did,
+  });
+
+  console.log("Response data:", response);
+};
+
 // create profile
-export const createProfile = async (data) => {
-  console.log(data, "tprofile data");
+export const createProfile = async (fullName) => {
+  console.log("creating profile.....");
   try {
     // destructuring the data
     const myDid = useStore.getState().myDid;
@@ -590,7 +386,7 @@ export const createProfile = async (data) => {
 
     // construct user profile
     const userProfile = {
-      ...data,
+      fullName,
       profileId: myDid,
       timestampWritten: `${currentDate} ${currentTime}`,
     };
@@ -611,10 +407,19 @@ export const createProfile = async (data) => {
     const { status: myDidStatus } = await record.send(myDid);
     console.log("data written to local DWN", { record, status });
     console.log("data written to remote DWN", { myDidStatus });
-    return true;
+
+    // return the response
+    return {
+      success: true,
+      data: "User profile has been successfully written to DWN",
+    };
   } catch (error) {
-    return false;
     console.error("Error writing secret message to DWN", error);
+    // return the response
+    return {
+      success: false,
+      data: "Please try again!, couldnt write to DWN",
+    };
   }
 };
 
@@ -624,6 +429,8 @@ export const readProfile = async () => {
   try {
     const web5 = useStore.getState().web5;
     const myDid = useStore.getState().myDid;
+
+    // querying the profile record
     const response = await web5.dwn.records.query({
       from: myDid,
       message: {
@@ -633,20 +440,43 @@ export const readProfile = async () => {
       },
     });
 
+    // checking if quering records was successfull
     if (response.status.code === 200) {
-      const userMessages = await Promise.all(
+      const profileRecord = await Promise.all(
         response.records.map(async (record) => {
           const data = await record.data.json();
           return data;
         })
       );
-      return userMessages;
-    } else {
-      console.error("Error fetching sent messages:", response.status);
-      return [];
+
+      // setting the state of the profile
+      useStore.setState({ profile: profileRecord[0] });
+
+      // return profile record
+      return {
+        success: true,
+      };
     }
   } catch (error) {
     console.error("Error in fetchSentMessages:", error);
+
+    // return error
+    return {
+      success: false,
+      data: "ooppss something went wrong, please try again",
+    };
+  }
+};
+
+export const readLocalUserProfile = () => {
+  const profile = localStorage.getItem("profile");
+  console.log(profile, "hello profile");
+
+  if (profile) {
+    useStore.setState({ profile: profile });
+    return {
+      success: true,
+    };
   }
 };
 
@@ -655,49 +485,120 @@ export const createSpace = async (data) => {
   try {
     const web5 = useStore.getState().web5;
     const myDid = useStore.getState().myDid;
+    const fullName = useStore.getState().profile;
 
     let base64Image;
 
-    // getting the binary image file
-    const binaryImage = await data.spaceImage.arrayBuffer();
-    base64Image = btoa(
-      new Uint8Array(binaryImage).reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ""
-      )
-    );
+    // checking if the user selects an image
+    if (data.spaceImage.length !== 0) {
+      // getting the binary image file
+      const binaryImage = await data.spaceImage.arrayBuffer();
+      base64Image = btoa(
+        new Uint8Array(binaryImage).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      );
 
-    data["spaceImage"] = base64Image;
+      data["spaceImage"] = base64Image;
+    }
 
     // get current date and time
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
 
     // construct user profile
-    const userProfile = {
+    const spaceData = {
       ...data,
+      spaceAuthor: fullName,
+      spaceAuthorProfile: fullName.trim()[0],
+      spaceAuthorDid: myDid,
+      spaceFiles: [],
+      spaceSubscribers: 0,
       timestampWritten: `${currentDate} ${currentTime}`,
     };
 
+    // check the type of space the user wants to create
+    if (data.spacePrivacy === "private") {
+      console.log("creating public space....", spaceData);
+      const response = await handleCreatePrivateSpace(web5, myDid, spaceData);
+      if (response.success) {
+        console.log("writing the did to redis....");
+        writeDidsToDb();
+      }
+      return response;
+    } else {
+      console.log("creating public space....", spaceData);
+      const response = await handleCreatePublicSpace(web5, myDid, spaceData);
+      if (response.success) {
+        console.log("writing the did to redis....");
+        writeDidsToDb();
+      }
+      return response;
+    }
+  } catch (error) {
+    console.error("ERROR: ", error);
+  }
+};
+
+// read spaces created by the user
+export const getUserSpace = async () => {
+  console.log("Getting the user spaces");
+  try {
+    const web5 = useStore.getState().web5;
+    const myDid = useStore.getState().myDid;
+
+    // await both async functions concurrently
+    const [privateSpace, publicSpace, sharedSpace] = await Promise.all([
+      handleReadPrivateSpace(web5, myDid),
+      handleReadUserPublicSpace(web5, myDid),
+      handleReadUserSharedSpace(web5, myDid),
+    ]);
+
+    // Concatenate the spaces after both promises have resolved successfully
+    const mySpaces = privateSpace.concat(publicSpace, sharedSpace);
+
+    console.log(sharedSpace, "whatt i got");
+    // set the state
+    useStore.setState({ mySpaces });
+
+    // return statement
+    return {
+      success: true,
+      message: "Spaces has been successfully read",
+    };
+    // console.log("my spaces", mySpaces);
+  } catch (error) {
+    console.error("Something went wrong", error);
+    return {
+      success: false,
+      msg: "Something went  wrong",
+    };
+  }
+};
+
+// create private space
+async function handleCreatePrivateSpace(web5, myDid, spaceData) {
+  try {
     const { record, status } = await web5.dwn.records.create({
-      data: userProfile,
+      data: spaceData,
       message: {
         protocol: PROTOCOL_URI,
-        protocolPath: "space",
-        schema: SPACE_SCHEMA,
+        protocolPath: "privateSpace",
+        schema: PRIVATE_SPACE_SCHEMA,
         dataFormat: "application/json",
       },
     });
 
     if (status.code === 202) {
-      console.log(userProfile, "userProfile");
-      console.log(record, "the returned record");
+      console.log(record, "successfully sent space to local DWN");
       const { status: remoteDwnStatus } = await record.send(myDid);
 
       if (remoteDwnStatus.code === 202) {
+        console.log(record, "successfully sent space to remote DWN");
         return {
           success: true,
-          message: "space created successfully",
+          msg: "space created successfully",
         };
       }
     }
@@ -705,59 +606,69 @@ export const createSpace = async (data) => {
     console.error(error, "error message");
     return {
       success: false,
-      message: "Something went wrong",
+      msg: "Something went wrong",
     };
   }
-};
+}
 
-// read space
-export const getUserSpace = async () => {
+// read private space
+async function handleReadPrivateSpace(web5, myDid) {
   try {
-    const web5 = useStore.getState().web5;
-    const myDid = useStore.getState().myDid;
-
     // getting the space records
     const { records } = await web5.dwn.records.query({
       from: myDid,
       message: {
         filter: {
-          schema: SPACE_SCHEMA,
+          schema: PRIVATE_SPACE_SCHEMA,
         },
       },
     });
 
-    // declare myspace
-    let mySpace = [];
+    // declare my private space
+    let privateSpaceRecords = [];
 
-    // mapping throught the mixed records
-    let spaceRecords = records.map(async (record) => {
-      let { record: space } = await web5.dwn.records.read({
-        message: {
-          filter: {
-            recordId: record.id,
-          },
-        },
-      });
+    await Promise.all(
+      records.map(async (record) => {
+        const data = await record.data.json();
 
-      // querying the record data in json
-      const spaces = await space.data.json();
+        console.log(data, "the data");
+        const privateSpaceData = { ...data, id: record.id };
+        privateSpaceRecords.push(privateSpaceData);
+      })
+    );
 
-      // if spaces, add to the array
-      if (spaces) {
-        mySpace.push(spaces);
-      }
-    });
+    // console.log(publicSpaceRecords, "the result");
+    return privateSpaceRecords;
+
+    // mapping through the mixed records
+    // let spaceRecords = records.map(async (record) => {
+    //   let { record: space } = await web5.dwn.records.read({
+    //     message: {
+    //       filter: {
+    //         recordId: record.id,
+    //       },
+    //     },
+    //   });
+
+    //   // querying the record data in json
+    //   const spaces = await space.data.json();
+
+    //   // if spaces, add to the array
+    //   if (spaces) {
+    //     myPrivateSpace.push(spaces);
+    //   }
+    // });
 
     // Wait for all promises to resolve
-    Promise.all(spaceRecords)
-      .then(() => {
-        // All asynchronous operations completed
-        console.log("All spaces fetched:", mySpace);
-        return mySpace;
-      })
-      .catch((error) => {
-        console.error("Error fetching spaces:", error);
-      });
+    // Promise.all(spaceRecords)
+    //   .then(() => {
+    //     // All asynchronous operations completed
+    //     console.log("All spaces fetched:", myPrivateSpace);
+    //     return myPrivateSpace;
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error fetching spaces:", error);
+    //   });
   } catch (error) {
     console.error("Something went wrong", error);
     return {
@@ -765,4 +676,434 @@ export const getUserSpace = async () => {
       message: "Something went  wrong",
     };
   }
+}
+
+// create public space
+async function handleCreatePublicSpace(web5, myDid, spaceData) {
+  // TODO: whenever creating a public space, writi the did to redis
+  const { record, status } = await web5.dwn.records.create({
+    data: spaceData,
+    message: {
+      schema: PUBLIC_SPACE_SCHEMA,
+      dataFormat: "application/json",
+      published: true,
+    },
+  });
+
+  if (status.code === 202) {
+    console.log(record, "successfully sent public space to local DWN");
+    const { status: remoteDwnStatus } = await record.send(myDid);
+
+    if (remoteDwnStatus.code === 202) {
+      console.log(record, "successfully sent public space to remote DWN");
+      return {
+        success: true,
+        msg: "space created successfully",
+      };
+    }
+  }
+}
+
+// reading the public space of the main user
+async function handleReadUserPublicSpace(web5, myDid) {
+  console.log("reading the public space");
+  const { records } = await web5.dwn.records.query({
+    from: myDid,
+    message: {
+      filter: {
+        schema: PUBLIC_SPACE_SCHEMA,
+        dataFormat: "application/json",
+      },
+    },
+  });
+  console.log(records, "records");
+
+  let publicSpaceRecords = [];
+
+  // Read the record
+  try {
+    await Promise.all(
+      records.map(async (record) => {
+        const data = await record.data.json();
+
+        console.log(data, "the data");
+        const publicSpaceData = { ...data, id: record.id };
+        publicSpaceRecords.push(publicSpaceData);
+      })
+    );
+
+    // console.log(publicSpaceRecords, "the result");
+    return publicSpaceRecords;
+  } catch (error) {
+    console.log(error, "error");
+  }
+}
+
+// reading the shared space of the main user
+async function handleReadUserSharedSpace(web5, myDid) {
+  console.log("reading the shared space");
+  const { records } = await web5.dwn.records.query({
+    from: myDid,
+    message: {
+      filter: {
+        schema: SHARED_SPACE_SCHEMA,
+        dataFormat: "application/json",
+      },
+    },
+  });
+  console.log(records, "records");
+
+  let sharedSpaceRecords = [];
+
+  // Read the record
+  try {
+    await Promise.all(
+      records.map(async (record) => {
+        const data = await record.data.json();
+        console.log(data, "id");
+
+        // let { record: spaceRecord } = await web5.dwn.records.read({
+        //   message: {
+        //     filter: {
+        //       recordId:
+        //         "bafyreig3lq6lp366kfe2qawu7ozrfmjk2r673bujumnxllijlzqptocslu ",
+        //     },
+        //   },
+        // });
+
+        // const text = await spaceRecord;
+
+        // console.log(await text, "the data");
+        const publicSpaceData = { ...data, id: record.id };
+        sharedSpaceRecords.push(publicSpaceData);
+      })
+    );
+
+    // console.log(sharedSpaceRecords, "the result");
+    return sharedSpaceRecords;
+  } catch (error) {
+    console.log(error, "error");
+  }
+}
+
+// read all the public spaces created by all the users
+export const readExplorePublicSpace = async () => {
+  const web5 = useStore.getState().web5;
+
+  const response = await axios({
+    method: "get",
+    url: "/api",
+  });
+
+  const { data, status } = response.data;
+
+  let publicSpaceRecord = [];
+
+  if (status === 1) {
+    const userDids = Object.values(data);
+    handleQueryUserRecord(web5, userDids)
+      .then((response) => {
+        console.log("Response:", response.data);
+        useStore.setState({ spaces: response.data });
+        // handleReadUserRecord(web5, response.data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+    // const main = userDids.map(async (userDid) => {
+    //   let { records } = await web5.dwn.records.query({
+    //     from: userDid,
+    //     message: {
+    //       filter: {
+    //         schema: PUBLIC_SPACE_SCHEMA,
+    //         dataFormat: "application/json",
+    //       },
+    //     },
+    //   });
+
+    //   console.log(await records);
+    //   const rec = records.map(async (record) => {
+    //     // const data = await record.data.json();
+    //     const data = await record.id;
+    //     console.log(data);
+    //     // bafyreifxdra4c24iylgwd6eswtkk6i37jl4trfpvospdl2gc4yveajugja;
+    //     //
+
+    //     let { record: rc } = await web5.dwn.records.read({
+    //       from: userDid,
+    //       message: {
+    //         filter: {
+    //           recordId: data,
+    //         },
+    //       },
+    //     });
+
+    //     // assuming the record has a text payload
+    //     const text = await rc?.data?.json();
+    //     return text;
+    //   });
+
+    //   const newrec = await Promise.all(rec);
+
+    //   if (newrec) {
+    //     console.log("am done");
+    //   }
+    //   console.log(rec, "the rec");
+    //   console.log(newrec, "the new rec");
+    // });
+
+    // const theMain = await Promise.all(main);
+    // console.log(theMain, "the main");
+
+    // console.log(publicSpaceRecord, "the record");
+    return {
+      success: true,
+      message: {
+        data: publicSpaceRecord,
+        text: "public space has been successfully read",
+      },
+    };
+  }
+
+  useStore.setState({ spaces: [] });
+  return [];
 };
+
+async function handleQueryUserRecord(web5, userDids) {
+  try {
+    const n = [];
+    const record = await Promise.all(
+      userDids.map(async (userDid) => {
+        const { records } = await web5.dwn.records.query({
+          from: userDid,
+          message: {
+            filter: {
+              schema: PUBLIC_SPACE_SCHEMA,
+              dataFormat: "application/json",
+            },
+          },
+        });
+
+        const recPromises = records.map(async (record) => {
+          // const data = await record.data.json();
+          const data = await record.id;
+
+          let { record: rc } = await web5.dwn.records.read({
+            from: userDid,
+            message: {
+              filter: {
+                recordId: data,
+              },
+            },
+          });
+
+          // assuming the record has a text payload
+          const text = await rc?.data?.json();
+          const id = { id: data };
+          console.log(text, "this is the text");
+          n.push({ ...id, ...text });
+          // return text;
+        });
+        await Promise.all(recPromises);
+        // return records;
+      })
+    );
+
+    // Process the records or perform any other logic here
+    console.log("Records successfully retrieved:", record);
+
+    // Return a success response
+    return { success: true, data: n, message: "Query successfully executed" };
+  } catch (error) {
+    // Handle errors
+    console.error("Error handling query:", error);
+    return { success: false, message: "Error handling query" };
+  }
+}
+
+// function to request access to spaces
+export const subscribeToSpace = async (
+  authorDid,
+  spaceId,
+  spaceName,
+  notificationType
+) => {
+  try {
+    const web5 = useStore.getState().web5;
+    const subscriberDid = useStore.getState().myDid;
+    const senderName = useStore.getState().profile;
+
+    const data = {
+      message: `${senderName} is requesting access to ${spaceName} space`,
+      senderName,
+      spaceName,
+      authorDid,
+      subscriberDid,
+      spaceId,
+      notificationType,
+    };
+    console.log(data, "the data");
+
+    const { record } = await web5.dwn.records.create({
+      data: data,
+      store: false, //remove this line if you want to keep a copy of the record in the sender's DWN
+      message: {
+        protocol: PROTOCOL_URI,
+        protocolPath: "notification",
+        schema: NOTIFICATION_SCHEMA,
+        recipient: authorDid,
+      },
+    });
+
+    //send record to recipient's DWN
+    const { status } = await record.send(authorDid);
+    console.log(status, "this is the status");
+  } catch (error) {
+    console.error(error, "this is the error");
+  }
+};
+
+// read the notification for subscription
+export const readNotification = async () => {
+  try {
+    console.log("getting notification");
+    const web5 = useStore.getState().web5;
+    const myDid = useStore.getState().myDid;
+
+    const { records } = await web5.dwn.records.query({
+      from: myDid,
+      message: {
+        filter: {
+          schema: NOTIFICATION_SCHEMA,
+          dataFormat: "application/json",
+        },
+      },
+    });
+
+    if (records.length > 0) {
+      const notifications = await Promise.all(
+        records.map(async (record) => {
+          const data = await record.data.json();
+          return {
+            ...data,
+            recordId: record.id,
+          };
+        })
+      );
+      console.log(notifications, "the notification");
+      useStore.setState({ notifications });
+      return notifications;
+    } else {
+      console.log("There are no records: ");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching sent messages: ", error);
+  }
+};
+
+// respond to the user request
+export const grantSpaceRequest = async (notification, respondType) => {
+  const web5 = useStore.getState().web5;
+  const myDid = useStore.getState().myDid;
+  const senderName = useStore.getState().profile;
+
+  const data = {
+    message: `Your request to access ${notification.spaceName} was ${respondType}`,
+    authorDid: notification.authorDid,
+    senderName,
+    subscriberDid: notification.subscriberDid,
+    spaceId: notification.spaceId,
+    notificationType: "response",
+  };
+  console.log(data, "the data");
+  console.log(notification, "the notification");
+
+  if (respondType === "accepted") {
+    // Reads the indicated record from the user's DWNs
+    let { record } = await web5.dwn.records.read({
+      message: {
+        filter: {
+          recordId: notification.spaceId,
+        },
+      },
+    });
+
+    const spaceRecord = await record.data.json();
+
+    const newRecord = { ...spaceRecord };
+
+    newRecord["spacePrivacy"] = "shared";
+    newRecord["spaceImage"] = "https://developer.tbd.website/img/tbd-logo.svg";
+
+    if (spaceRecord) {
+      console.log("Writing to shared space", spaceRecord);
+
+      // write to a shared space
+      const { record: sharedSpaceRecord } = await web5.dwn.records.create({
+        data: newRecord,
+        store: false, //remove this line if you want to keep a copy of the record in the sender's DWN
+        message: {
+          protocol: PROTOCOL_URI,
+          protocolPath: "sharedSpace",
+          schema: SHARED_SPACE_SCHEMA,
+          recipient: notification.subscriberDid,
+        },
+      });
+
+      //send space record to recipient's DWN
+      const { status } = await sharedSpaceRecord.send(
+        notification.subscriberDid
+      );
+
+      console.log(status, "the status for shared");
+      if (status.code === 202) {
+        // delete the notification request record
+        const deleteNotification = await deleteRecord(
+          web5,
+          myDid,
+          notification.recordId
+        );
+
+        // send a success notification
+        console.log(deleteNotification, "the notification has been deleted");
+      }
+    }
+    console.log(spaceRecord, "this is the record");
+  } else {
+    // delete the notification record
+    // send a new denied notification
+  }
+};
+
+async function giveSpaceAccess(spaceId) {}
+
+async function sendSpaceRequestNotification(web5, data, notification) {
+  const { record } = await web5.dwn.records.create({
+    data: data,
+    store: false, //remove this line if you want to keep a copy of the record in the sender's DWN
+    message: {
+      protocol: PROTOCOL_URI,
+      protocolPath: "notification",
+      schema: NOTIFICATION_SCHEMA,
+      recipient: notification.subscriberDid,
+    },
+  });
+
+  //send record to recipient's DWN
+  const { status } = await record.send(notification.subscriberDid);
+  if (status.code === 202) {
+  }
+  console.log(status, "this is the status");
+}
+
+async function deleteRecord(web5, did, recordId) {
+  const response = await web5.dwn.records.delete({
+    from: did,
+    message: {
+      recordId: recordId,
+    },
+  });
+
+  return response;
+}

@@ -7,6 +7,7 @@ const SpaceCard = ({ path, space }) => {
   const router = useRouter();
 
   const handleRoute = (id) => {
+    console.log(space, "the space");
     router.push(`${path}/${id}`);
   };
   return (
@@ -16,7 +17,7 @@ const SpaceCard = ({ path, space }) => {
         onClick={() => handleRoute(space.id)}
       >
         <Image
-          src={space.spaceImage}
+          src={`data:image/png;base64,${space.spaceImage}`}
           height={1000}
           width={600}
           className="relative object-cover transition-all hover:scale-105"

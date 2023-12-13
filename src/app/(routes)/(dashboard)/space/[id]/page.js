@@ -9,22 +9,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useStore } from "@/store/Store";
+import { subscribeToSpace, useStore } from "@/store/Store";
 import Image from "next/image";
 import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
 
 const Space = () => {
-  const [spaces] = useStore((state) => [state.spaces]);
+  const [spaces, did] = useStore((state) => [state.spaces, state.myDid]);
   const [spaceFile, setSpaceFileUpload] = useState(null);
   const params = useParams();
   console.log(params.id, "params");
 
   const [space] = useState(spaces.filter((space) => space.id === params.id));
   const {
+    id,
     spaceName,
     spaceAuthorProfile,
     spaceAuthor,
+    spaceAuthorDid,
     spaceImage,
     spaceFiles,
     spaceSubscribers,
@@ -54,7 +56,7 @@ const Space = () => {
         <div className="relative">
           <div className="w-full h-[300px] rounded-lg overflow-hidden">
             <Image
-              src={spaceImage}
+              src={`data:image/png;base64,${spaceImage}`}
               quality={100}
               fill
               sizes="100vw"
@@ -120,9 +122,21 @@ const Space = () => {
                 <h1 className="color1 text-white px-2 rounded-md text-bold">
                   {spaceMonetization === "yes" ? "Paid" : "Free"}
                 </h1>
-                <h1 className="  px-3 rounded-md text-bold cursor-pointer color1 text-white">
-                  Subscribe
-                </h1>
+                {did !== spaceAuthorDid && (
+                  <h1
+                    className="px-3 rounded-md text-bold cursor-pointer color1 text-white"
+                    onClick={() =>
+                      subscribeToSpace(
+                        spaceAuthorDid,
+                        id,
+                        spaceName,
+                        "requesting"
+                      )
+                    }
+                  >
+                    Subscribe
+                  </h1>
+                )}
               </div>
             </div>
           </div>

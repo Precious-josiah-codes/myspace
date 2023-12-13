@@ -19,25 +19,35 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useStore } from "@/store/Store";
+import {
+  createSpace,
+  getUserSpace,
+  initWeb5,
+  readLocalUserProfile,
+  useStore,
+} from "@/store/Store";
+import { DollarSignIcon, MessageSquarePlusIcon } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Spaces = () => {
-  const [$mySpaces] = useStore((state) => [state.mySpaces]);
+  const [$mySpaces, did] = useStore((state) => [state.mySpaces, state.myDid]);
+  const [createSpaceLoader, setCreateSpaceLoader] = useState(false);
+  const [createSpaceSuccessMsg, setCreateSpaceSuccessMsg] = useState("");
 
   // grouping spaces
   const { privateSpace, publicSpace, sharedSpace } = {
-    privateSpace: $mySpaces.filter(
-      (mySpace) => mySpace.spacePrivacy === "private"
+    privateSpace: $mySpaces?.filter(
+      (mySpace) => mySpace?.spacePrivacy === "private"
     ),
-    publicSpace: $mySpaces.filter(
-      (mySpace) => mySpace.spacePrivacy === "private"
+    publicSpace: $mySpaces?.filter(
+      (mySpace) => mySpace?.spacePrivacy === "public"
     ),
-    sharedSpace: $mySpaces.filter(
-      (mySpace) => mySpace.spacePrivacy === "private"
+    sharedSpace: $mySpaces?.filter(
+      (mySpace) => mySpace?.spacePrivacy === "shared"
     ),
   };
+
   console.log(privateSpace, publicSpace, sharedSpace);
   const [toggleSpaceFileCreation, setToggleSpaceFileCreation] = useState(false);
 
@@ -49,6 +59,10 @@ const Spaces = () => {
   const [spacePrice, setSpacePrice] = useState("");
   const [spaceTags, setSpaceTags] = useState("");
   const [spaceImage, setSpaceImage] = useState("");
+
+  // space error data
+  const [spaceNameError, setSpaceNameError] = useState("");
+  const [spacePriceError, setSpacePriceError] = useState("");
 
   // file data
   const [fileSpace, setFileSpace] = useState("");
@@ -73,23 +87,80 @@ const Spaces = () => {
   }
 
   //   handle space creation
-  function handleSpaceCreation() {
-    console.log({
-      spaceName,
-      spaceDescription,
-      spacePrivacy,
-      spaceMonetization,
-      spacePrice,
-      spaceTags,
-      spaceImage,
-    });
+  async function handleSpaceCreation() {
+    // reset error message on function call
+    setSpaceNameError("");
+    setSpacePriceError("");
+    setCreateSpaceLoader(true);
+    setCreateSpaceSuccessMsg("");
+
+    // validate the form submission
+    if (spaceName.trim().length === 0) {
+      console.log("space name error");
+      setSpaceNameError("Please provide a name for your space");
+    } else if (spaceMonetization === "yes" && spacePrice.length === 0) {
+      console.log("space price error");
+      setSpacePriceError("Please provide a price for your space");
+    } else {
+      // call the space creation function here
+      console.log(
+        {
+          spaceName,
+          spaceDescription,
+          spacePrivacy,
+          spaceMonetization,
+          spacePrice,
+          spaceTags,
+          spaceImage,
+        },
+        "hello"
+      );
+
+      const response = await createSpace({
+        spaceName,
+        spaceDescription,
+        spacePrivacy,
+        spaceMonetization,
+        spacePrice,
+        spaceTags,
+        spaceImage,
+      });
+
+      if (response.success) {
+        setCreateSpaceLoader(false);
+        setCreateSpaceSuccessMsg(
+          "Your space has been successfully created, reload page to see space"
+        );
+      }
+      console.log("this is the response", response);
+    }
   }
 
-  //   handle adding file to space
+  // handle adding file to space
   function handleCreateSpaceFile() {
     console.log({ fileSpace, fileUpload });
   }
 
+  useEffect(() => {
+    async function handleWeb5() {
+      if (!did) {
+        const { success } = await initWeb5();
+        if (success) {
+          const [userSpace] = await Promise.all([getUserSpace()]);
+          console.log(userSpace, "public space");
+        }
+      } else {
+        const [userSpace] = await Promise.all([getUserSpace()]);
+        console.log(userSpace, "public space");
+      }
+    }
+
+    // TODO: check if the profile works when page is reloaded
+    readLocalUserProfile();
+    handleWeb5();
+  }, []);
+
+  // TODO: WRITE THE FILE TYPE WHILE CREATING A SPACE AS WELL
   return (
     <section className="relative">
       <main className="">
@@ -110,35 +181,55 @@ const Spaces = () => {
 
           {/* private space */}
           <TabsContent value="privateSpace">
-            <section className="grid grid-cols-3 gap-6">
-              {privateSpace.map((space, index) => (
-                <div key={index}>
-                  <SpaceCard path="myspace" space={space} />
-                </div>
-              ))}
-            </section>
+            <div>
+              {privateSpace?.length > 0 ? (
+                <section className="grid grid-cols-3 gap-6">
+                  {privateSpace?.map((space, index) => (
+                    <div key={index}>
+                      <SpaceCard path="myspace" space={space} />
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                <h1 className="text-center">You have no private space</h1>
+              )}
+            </div>
           </TabsContent>
 
           {/* public space */}
           <TabsContent value="publicSpace">
-            <section className="grid grid-cols-3 gap-6">
-              {publicSpace.map((space, index) => (
-                <div key={index}>
-                  <SpaceCard path="myspace" space={space} />
-                </div>
-              ))}
-            </section>
+            <div>
+              {publicSpace?.length > 0 ? (
+                <section className="grid grid-cols-3 gap-6">
+                  {publicSpace?.map((space, index) => (
+                    <div key={index}>
+                      <SpaceCard path="myspace" space={space} />
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                <h1 className="text-center">You have no public space</h1>
+              )}
+            </div>
           </TabsContent>
 
           {/* shared space */}
           <TabsContent value="sharedSpace">
-            <section className="grid grid-cols-3 gap-6">
-              {sharedSpace.map((space, index) => (
-                <div key={index}>
-                  <SpaceCard path="myspace" space={space} />
-                </div>
-              ))}
-            </section>
+            <div>
+              {sharedSpace?.length > 0 ? (
+                <section className="grid grid-cols-3 gap-6">
+                  {sharedSpace?.map((space, index) => (
+                    <div key={index}>
+                      <SpaceCard path="myspace" space={space} />
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                <h1 className="text-center">
+                  No space has been shared with you
+                </h1>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </main>
@@ -149,7 +240,7 @@ const Spaces = () => {
           {/* create space */}
           <Dialog className="bg-black/80">
             <DialogTrigger asChild>
-              <div className="fixed bottom-[11rem] right-6 cursor-pointer">
+              <div className="fixed bottom-[11.5rem] right-6 cursor-pointer">
                 <span className="relative flex h-[3.5rem] w-[10rem] ">
                   <span className="animate-ping absolute inline-flex   h-full w-full rounded-full opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-[3.5rem] w-[10rem] items-center justify-center text-black bg-white shadow-lg">
@@ -159,7 +250,9 @@ const Spaces = () => {
               </div>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] h-[25rem] overflow-y-auto sidebar">
-              <h1 className="text-lg text-center">Create your space</h1>
+              <h1 className="text-lg text-center font-bold">
+                Create your space
+              </h1>
               {/* create space form fields */}
               <div className="grid gap-4 py-4">
                 {/* space name */}
@@ -171,6 +264,11 @@ const Spaces = () => {
                     onChange={(e) => setSpaceName(e.target.value)}
                     placeholder="e.g Lily's Movie Space"
                   />
+                  {spaceNameError.length > 0 && (
+                    <p className="text-red-700 mt-2 text-sm">
+                      {spaceNameError}
+                    </p>
+                  )}
                 </div>
 
                 {/* space Description */}
@@ -231,13 +329,25 @@ const Spaces = () => {
                     <Label htmlFor="spacePrice">
                       Set a price for your space ($ dollar)
                     </Label>
-                    <Input
-                      type="number"
-                      id="spacePrice"
-                      className="mt-3"
-                      value={spacePrice}
-                      onChange={(e) => setSpacePrice(e.target.value)}
-                    />
+
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        id="spacePrice"
+                        className="mt-3 pl-9"
+                        value={spacePrice}
+                        onChange={(e) => setSpacePrice(e.target.value)}
+                      />
+                      <DollarSignIcon
+                        className="absolute inset-y-[0.8rem] left-3"
+                        style={{ height: "1rem" }}
+                      />
+                    </div>
+                    {spacePriceError.length > 0 && (
+                      <p className="text-red-700 mt-2 text-sm">
+                        {spacePriceError}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -268,6 +378,11 @@ const Spaces = () => {
                 </div>
               </div>
 
+              {createSpaceSuccessMsg.length > 0 && (
+                <div className="text-green-700 text-center">
+                  {createSpaceSuccessMsg}
+                </div>
+              )}
               {/* create space submit button */}
               <DialogFooter>
                 <Button
@@ -275,7 +390,11 @@ const Spaces = () => {
                   className="w-full color1"
                   onClick={handleSpaceCreation}
                 >
-                  Create Space
+                  {createSpaceLoader ? (
+                    <div className="loader ease-linear rounded-full border-[0.1rem] border-t-[0.1rem] border-gray-200 h-[1.4rem] w-[1.4rem]" />
+                  ) : (
+                    "Create Space"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -287,7 +406,7 @@ const Spaces = () => {
               <div className="fixed bottom-[7rem] right-6 cursor-pointer">
                 <span className="relative flex h-[3.5rem] w-[7rem] ">
                   <span className="animate-ping absolute inline-flex   h-full w-full rounded-full opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-[3.5rem] w-[7rem] items-center justify-center text-black bg-white shadow-lg">
+                  <span className="relative inline-flex rounded-full h-[3.5rem] w-[7rem] items-center justify-center text-black bg-white shadow-lg ">
                     Add File
                   </span>
                 </span>
@@ -296,7 +415,9 @@ const Spaces = () => {
 
             {/* form for adding file */}
             <DialogContent className="sm:max-w-[425px] h-[25rem] overflow-y-auto sidebar">
-              <h1 className="text-lg text-center">Add a file to a space</h1>
+              <h1 className="text-lg text-center font-bold">
+                Add a file to a space
+              </h1>
               <div className="grid gap-4 py-4">
                 {/* file space*/}
                 <div className="w-full space-y-3">
@@ -389,6 +510,12 @@ const Spaces = () => {
       </div>
 
       {/* end create devices modal */}
+
+      {!$mySpaces && (
+        <div className="fixed top-0 left-0 z-[100] w-full h-screen bg-black text-white flex justify-center items-center">
+          <h1 className="animate-pulse">Loading Spaces....</h1>
+        </div>
+      )}
     </section>
   );
 };

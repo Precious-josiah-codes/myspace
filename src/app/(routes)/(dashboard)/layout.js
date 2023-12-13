@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }) {
 
       {!profile && (
         <div className="bg-[#000000fb] w-full h-screen fixed top-0 z-[999999] flex justify-center items-center">
-          <h1 className="animate-pulse text-white">Checking for DID....</h1>
+          <h1 className="animate-pulse text-white">Loading spaces...</h1>
         </div>
       )}
     </main>
